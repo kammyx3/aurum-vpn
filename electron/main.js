@@ -184,7 +184,16 @@ function setupAutoUpdater() {
 ipcMain.on("updater:check", () => {
   if (autoUpdater) {
     autoUpdater.checkForUpdates().catch((err) => {
-      console.error("Check for updates failed:", err.message);
+      console.error("[updater] Check for updates failed:", err.message);
+      mainWindow?.webContents.send("updater:error", err.message);
+    });
+  }
+});
+
+ipcMain.on("updater:download", () => {
+  if (autoUpdater) {
+    autoUpdater.downloadUpdate().catch((err) => {
+      console.error("[updater] Download failed:", err.message);
       mainWindow?.webContents.send("updater:error", err.message);
     });
   }

@@ -49,6 +49,11 @@ export default function TitleBar() {
     window.electronAPI?.updater?.checkForUpdates?.();
   };
 
+  const handleDownloadUpdate = () => {
+    setUpdateStatus("downloading");
+    window.electronAPI?.updater?.downloadUpdate?.();
+  };
+
   const handleInstallUpdate = () => {
     window.electronAPI?.updater?.installUpdate?.();
   };
@@ -132,6 +137,7 @@ export default function TitleBar() {
           updateInfo={updateInfo}
           downloadProgress={downloadProgress}
           onCheck={handleCheckUpdate}
+          onDownload={handleDownloadUpdate}
           onInstall={handleInstallUpdate}
           onClose={() => setShowUpdatePanel(false)}
         />
@@ -145,6 +151,7 @@ function UpdatePanel({
   updateInfo,
   downloadProgress,
   onCheck,
+  onDownload,
   onInstall,
   onClose,
 }: {
@@ -152,6 +159,7 @@ function UpdatePanel({
   updateInfo: { version?: string; releaseDate?: string };
   downloadProgress: number;
   onCheck: () => void;
+  onDownload: () => void;
   onInstall: () => void;
   onClose: () => void;
 }) {
@@ -203,7 +211,7 @@ function UpdatePanel({
             </div>
             <button
               type="button"
-              onClick={onInstall}
+              onClick={onDownload}
               className="w-full px-3 py-2 rounded-md bg-[#c8a54e] hover:bg-[#b8963e] text-black text-xs font-semibold transition-colors"
             >
               Download &amp; Install
