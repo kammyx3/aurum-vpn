@@ -20,6 +20,8 @@ export default function TitleBar() {
 
     setIsElectron(true); // eslint-disable-line react-hooks/set-state-in-effect -- syncing with external Electron API
 
+    api.rendererReady?.();
+
     api.isMaximized().then(setIsMaximized);
 
     api.onMaximizeChange?.(setIsMaximized);

@@ -132,6 +132,17 @@ ipcMain.handle("window-is-maximized", () => mainWindow?.isMaximized() ?? false);
 // ─── Auto-Updater ───
 
 let autoUpdater = null;
+let rendererReady = false;
+let updateCheckScheduled = false;
+
+function scheduleUpdateCheck() {
+  if (updateCheckScheduled || !autoUpdater || !rendererReady) return;
+  updateCheckScheduled = true;
+  console.log("[updater] renderer ready, checking for updates...");
+  autoUpdater.checkForUpdates().catch((err) => {
+    console.error("[updater] Startup update check failed:", err.message);
+  });
+}
 
 function setupAutoUpdater() {
   console.log("[updater] isDev:", isDev, "isPackaged:", app.isPackaged);
@@ -197,6 +208,12 @@ function setupAutoUpdater() {
     console.error("[updater] Failed to load electron-updater:", err.message);
   }
 }
+
+ipcMain.on("renderer:ready", () => {
+  console.log("[updater] renderer signaled ready");
+  rendererReady = true;
+  scheduleUpdateCheck();
+});
 
 ipcMain.on("updater:check", () => {
   if (autoUpdater) {
@@ -416,15 +433,12 @@ app.whenReady().then(() => {
   createTray();
 
   setTimeout(() => {
-    if (autoUpdater) {
-      console.log("[updater] checking for updates...");
-      autoUpdater.checkForUpdates().catch((err) => {
-        console.error("[updater] Startup update check failed:", err.message);
-      });
-    } else {
-      console.log("[updater] autoUpdater is null, skipping check");
+    if (!rendererReady) {
+      console.log("[updater] fallback: renderer not ready after 15s, checking anyway");
+      rendererReady = true;
     }
-  }, 3000);
+    scheduleUpdateCheck();
+  }, 15000);
 
   app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
