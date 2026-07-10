@@ -1,10 +1,9 @@
 import "dotenv/config";
 import { PrismaClient } from "../src/generated/prisma/client.js";
-import { PrismaLibSql } from "@prisma/adapter-libsql";
+import { PrismaPg } from "@prisma/adapter-pg";
 import bcryptjs from "bcryptjs";
 
-const url = process.env.DATABASE_URL || "file:./prisma/dev.db";
-const adapter = new PrismaLibSql({ url });
+const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
 const prisma = new PrismaClient({ adapter });
 
 function randomKey(): string {
