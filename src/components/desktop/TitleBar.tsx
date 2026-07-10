@@ -172,7 +172,7 @@ function UpdatePanel({
 }) {
   return (
     <div className="absolute top-9 right-12 z-50 w-80 bg-[#111113] border border-zinc-800 rounded-lg shadow-2xl overflow-hidden">
-      <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-800">
+      <div className="flex items-center text-white justify-between px-4 py-3 border-b border-zinc-800">
         <h3 className="text-sm font-semibold">Updates</h3>
         <button
           type="button"
