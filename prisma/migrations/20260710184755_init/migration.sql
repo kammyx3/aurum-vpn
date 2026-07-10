@@ -1,16 +1,18 @@
 -- CreateTable
 CREATE TABLE "User" (
-    "id" TEXT NOT NULL PRIMARY KEY,
+    "id" TEXT NOT NULL,
     "username" TEXT NOT NULL,
     "password" TEXT NOT NULL,
     "plan" TEXT NOT NULL DEFAULT 'free',
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "User_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "VpnServer" (
-    "id" TEXT NOT NULL PRIMARY KEY,
+    "id" TEXT NOT NULL,
     "name" TEXT NOT NULL DEFAULT 'AURUM VPN Server',
     "mode" TEXT NOT NULL DEFAULT 'demo',
     "interfaceName" TEXT NOT NULL DEFAULT 'wg0',
@@ -22,13 +24,15 @@ CREATE TABLE "VpnServer" (
     "publicKey" TEXT NOT NULL DEFAULT '',
     "status" TEXT NOT NULL DEFAULT 'online',
     "region" TEXT NOT NULL DEFAULT 'us-east-1',
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "VpnServer_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "Device" (
-    "id" TEXT NOT NULL PRIMARY KEY,
+    "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "platform" TEXT NOT NULL DEFAULT 'unknown',
     "publicKey" TEXT NOT NULL,
@@ -39,49 +43,63 @@ CREATE TABLE "Device" (
     "notes" TEXT NOT NULL DEFAULT '',
     "planRequired" TEXT NOT NULL DEFAULT 'free',
     "vpnServerId" TEXT NOT NULL,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL,
-    "lastHandshake" DATETIME,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "lastHandshake" TIMESTAMP(3),
     "uploadBytes" BIGINT NOT NULL DEFAULT 0,
     "downloadBytes" BIGINT NOT NULL DEFAULT 0,
-    CONSTRAINT "Device_vpnServerId_fkey" FOREIGN KEY ("vpnServerId") REFERENCES "VpnServer" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+
+    CONSTRAINT "Device_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "ActivityLog" (
-    "id" TEXT NOT NULL PRIMARY KEY,
+    "id" TEXT NOT NULL,
     "deviceId" TEXT,
     "type" TEXT NOT NULL,
     "message" TEXT NOT NULL,
     "metadata" TEXT NOT NULL DEFAULT '{}',
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT "ActivityLog_deviceId_fkey" FOREIGN KEY ("deviceId") REFERENCES "Device" ("id") ON DELETE SET NULL ON UPDATE CASCADE
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "ActivityLog_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "UsageSample" (
-    "id" TEXT NOT NULL PRIMARY KEY,
+    "id" TEXT NOT NULL,
     "deviceId" TEXT NOT NULL,
     "uploadBytes" BIGINT NOT NULL DEFAULT 0,
     "downloadBytes" BIGINT NOT NULL DEFAULT 0,
-    "recordedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    "recordedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "UsageSample_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "AppSettings" (
-    "id" TEXT NOT NULL PRIMARY KEY DEFAULT 'singleton',
+    "id" TEXT NOT NULL DEFAULT 'singleton',
     "theme" TEXT NOT NULL DEFAULT 'system',
     "plan" TEXT NOT NULL DEFAULT 'free',
-    "data" TEXT NOT NULL DEFAULT '{}'
+    "data" TEXT NOT NULL DEFAULT '{}',
+
+    CONSTRAINT "AppSettings_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "AuditLog" (
-    "id" TEXT NOT NULL PRIMARY KEY,
+    "id" TEXT NOT NULL,
     "action" TEXT NOT NULL,
     "detail" TEXT NOT NULL DEFAULT '',
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "AuditLog_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
 CREATE UNIQUE INDEX "User_username_key" ON "User"("username");
+
+-- AddForeignKey
+ALTER TABLE "Device" ADD CONSTRAINT "Device_vpnServerId_fkey" FOREIGN KEY ("vpnServerId") REFERENCES "VpnServer"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ActivityLog" ADD CONSTRAINT "ActivityLog_deviceId_fkey" FOREIGN KEY ("deviceId") REFERENCES "Device"("id") ON DELETE SET NULL ON UPDATE CASCADE;
