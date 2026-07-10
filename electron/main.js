@@ -388,6 +388,14 @@ app.whenReady().then(() => {
   createWindow();
   createTray();
 
+  setTimeout(() => {
+    if (autoUpdater) {
+      autoUpdater.checkForUpdates().catch((err) => {
+        console.error("Startup update check failed:", err.message);
+      });
+    }
+  }, 3000);
+
   app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
     else mainWindow?.show();
