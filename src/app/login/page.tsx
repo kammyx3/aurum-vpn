@@ -37,7 +37,7 @@ export default function LoginPage() {
       }
 
       setUser(data.user);
-      router.push("/overview");
+      router.push("/app/overview");
     } catch {
       setError("Connection error");
     } finally {

@@ -6,16 +6,17 @@ import { cn } from "@/lib/utils";
 import { useAppStore } from "@/stores/appStore";
 
 const pageTitles: Record<string, string> = {
-  "/": "Overview",
-  "/devices": "Devices",
-  "/vpn-configs": "VPN Configs",
-  "/server-status": "Server Status",
-  "/activity": "Activity",
-  "/regions": "Regions",
-  "/security": "Security",
-  "/premium": "Premium",
-  "/settings": "Settings",
-  "/admin": "Admin Panel",
+  "/app": "Overview",
+  "/app/overview": "Overview",
+  "/app/devices": "Devices",
+  "/app/configs": "VPN Configs",
+  "/app/server": "Server Status",
+  "/app/activity": "Activity",
+  "/app/regions": "Regions",
+  "/app/security": "Security",
+  "/app/premium": "Premium",
+  "/app/settings": "Settings",
+  "/app/admin": "Admin Panel",
 };
 
 interface TopbarProps {
@@ -73,7 +74,7 @@ export default function Topbar({ onMenuClick }: TopbarProps) {
               onClick={async () => {
                 await fetch("/api/auth/logout", { method: "POST" });
                 logout();
-                router.push("/overview");
+                router.push("/");
               }}
               className="p-1.5 rounded-md text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800"
               title="Logout"

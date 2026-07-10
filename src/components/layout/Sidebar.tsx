@@ -18,16 +18,16 @@ import { cn } from "@/lib/utils";
 import { useAppStore } from "@/stores/appStore";
 
 const navItems = [
-  { label: "Overview", href: "/overview", icon: LayoutDashboard },
-  { label: "Devices", href: "/devices", icon: Monitor },
-  { label: "VPN Configs", href: "/configs", icon: FileText },
-  { label: "Server Status", href: "/server", icon: Server },
-  { label: "Activity", href: "/activity", icon: Activity },
-  { label: "Regions", href: "/regions", icon: Globe },
-  { label: "Security", href: "/security", icon: Shield },
-  { label: "Premium", href: "/premium", icon: Crown },
-  { label: "Settings", href: "/settings", icon: Settings },
-  { label: "Admin", href: "/admin", icon: Lock },
+  { label: "Overview", href: "/app/overview", icon: LayoutDashboard },
+  { label: "Devices", href: "/app/devices", icon: Monitor },
+  { label: "VPN Configs", href: "/app/configs", icon: FileText },
+  { label: "Server Status", href: "/app/server", icon: Server },
+  { label: "Activity", href: "/app/activity", icon: Activity },
+  { label: "Regions", href: "/app/regions", icon: Globe },
+  { label: "Security", href: "/app/security", icon: Shield },
+  { label: "Premium", href: "/app/premium", icon: Crown },
+  { label: "Settings", href: "/app/settings", icon: Settings },
+  { label: "Admin", href: "/app/admin", icon: Lock },
 ];
 
 interface SidebarProps {

@@ -133,8 +133,8 @@ ipcMain.handle("window-is-maximized", () => mainWindow?.isMaximized() ?? false);
 // ─── Custom Auto-Updater (checks via Vercel API, downloads from GitHub CDN) ───
 
 const UPDATE_API_URL = isDev
-  ? "http://localhost:3000/api/updates/latest"
-  : "https://aurum-vpn.vercel.app/api/updates/latest";
+  ? "http://localhost:3000/api/app-update"
+  : "https://aurum-vpn.vercel.app/api/app-update";
 
 function isNewerVersion(latest, current) {
   const l = latest.split(".").map(Number);

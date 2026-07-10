@@ -270,7 +270,7 @@ export default function OverviewPage() {
             <CardTitle className="text-sm font-semibold">Recent Device Activity</CardTitle>
             <CardDescription>Last 5 updated devices</CardDescription>
           </div>
-          <Button variant="outline" size="sm" onClick={() => window.location.href = "/devices"}>
+          <Button variant="outline" size="sm" onClick={() => window.location.href = "/app/devices"}>
             View All
           </Button>
         </CardHeader>
@@ -285,7 +285,7 @@ export default function OverviewPage() {
             <div className="text-center py-8">
               <Activity className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
               <p className="text-sm text-muted-foreground">No devices yet</p>
-              <Button variant="outline" size="sm" className="mt-3" onClick={() => window.location.href = "/devices"}>
+              <Button variant="outline" size="sm" className="mt-3" onClick={() => window.location.href = "/app/devices"}>
                 <Plus className="h-4 w-4 mr-1" />
                 Add Device
               </Button>
