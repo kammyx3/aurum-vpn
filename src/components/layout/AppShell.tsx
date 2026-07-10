@@ -35,14 +35,14 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <ToastProvider>
-      <div className="flex flex-col min-h-screen">
+      <div className="flex flex-col h-screen overflow-hidden">
         <TitleBar />
-        <div className="flex flex-1 overflow-hidden">
+        <div className="flex flex-1 min-h-0">
           <Sidebar
             isOpen={sidebarOpen}
             onClose={() => setSidebarOpen(false)}
           />
-          <div className="flex flex-1 flex-col lg:ml-60">
+          <div className="flex flex-1 flex-col min-w-0 lg:ml-60">
             <Topbar onMenuClick={() => setSidebarOpen(true)} />
             <main className="flex-1 overflow-auto p-6">{children}</main>
           </div>
