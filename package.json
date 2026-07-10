@@ -8,16 +8,16 @@
   "scripts": {
     "dev": "concurrently \"npm run dev:next\" \"wait-on http://localhost:3000 && electron .\"",
     "dev:next": "next dev",
-    "build": "next build && node scripts/postbuild.js",
+    "build": "next build",
     "start": "next start",
     "electron:dev": "electron .",
-    "electron:build": "npm run build && electron-builder",
-    "electron:build:win": "npm run build && electron-builder --win",
-    "electron:build:mac": "npm run build && electron-builder --mac",
-    "electron:build:linux": "npm run build && electron-builder --linux",
-    "release:win": "npm run build && electron-builder --win --publish always",
-    "release:mac": "npm run build && electron-builder --mac --publish always",
-    "release:linux": "npm run build && electron-builder --linux --publish always",
+    "electron:build": "electron-builder",
+    "electron:build:win": "electron-builder --win",
+    "electron:build:mac": "electron-builder --mac",
+    "electron:build:linux": "electron-builder --linux",
+    "release:win": "electron-builder --win --publish always",
+    "release:mac": "electron-builder --mac --publish always",
+    "release:linux": "electron-builder --linux --publish always",
     "deploy:web": "vercel deploy --yes --prod",
     "lint": "eslint"
   },
@@ -29,25 +29,14 @@
     },
     "publish": {
       "provider": "github",
-      "owner": "aurum-vpn",
+      "owner": "kammyx3",
       "repo": "aurum-vpn"
     },
     "files": [
       "electron/**/*",
-      ".next/standalone/**/*",
-      "prisma/**/*",
-      "node_modules/.prisma/**/*",
-      "node_modules/@prisma/**/*",
-      "node_modules/@libsql/**/*",
       "node_modules/electron-updater/**/*",
       "node_modules/js-yaml/**/*",
       "package.json"
-    ],
-    "extraResources": [
-      {
-        "from": "prisma/dev.db",
-        "to": "data/dev.db"
-      }
     ],
     "win": {
       "target": [

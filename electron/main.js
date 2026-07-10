@@ -1,95 +1,14 @@
 const { app, BrowserWindow, ipcMain, Tray, Menu, nativeImage, shell, dialog } = require("electron");
 const path = require("path");
-const { exec, spawn } = require("child_process");
+const { exec } = require("child_process");
 const fs = require("fs");
 
 const isDev = !app.isPackaged;
 const PORT = 3000;
+const PRODUCTION_URL = "https://aurum-vpn.vercel.app";
 let mainWindow = null;
 let tray = null;
 let isQuitting = false;
-
-function getDatabasePath() {
-  if (isDev) {
-    return path.join(__dirname, "..", "prisma", "dev.db");
-  }
-  return path.join(app.getPath("userData"), "data", "dev.db");
-}
-
-let nextServerProcess = null;
-
-function getStandaloneDir() {
-  return path.join(__dirname, "..", ".next", "standalone");
-}
-
-function startNextServer() {
-  return new Promise((resolve, reject) => {
-    const standaloneDir = getStandaloneDir();
-    const serverScript = path.join(standaloneDir, "server.js");
-
-    if (!fs.existsSync(serverScript)) {
-      return reject(new Error(`Standalone server not found at ${serverScript}`));
-    }
-
-    const dbPath = getDatabasePath();
-    const dbDir = path.dirname(dbPath);
-
-    if (!fs.existsSync(dbDir)) {
-      fs.mkdirSync(dbDir, { recursive: true });
-    }
-
-    const env = {
-      ...process.env,
-      NODE_ENV: "production",
-      PORT: String(PORT),
-      HOSTNAME: "127.0.0.1",
-      DATABASE_URL: `file:${dbPath}`,
-    };
-
-    nextServerProcess = spawn(process.execPath, [serverScript], {
-      cwd: standaloneDir,
-      env,
-      stdio: ["ignore", "pipe", "pipe"],
-    });
-
-    let started = false;
-
-    const onData = (data) => {
-      const text = data.toString();
-      if (!started && (text.includes("Ready in") || text.includes("started on") || text.includes("Ready"))) {
-        started = true;
-        nextServerProcess.stdout.removeListener("data", onData);
-        resolve();
-      }
-    };
-
-    nextServerProcess.stdout.on("data", onData);
-    nextServerProcess.stderr.on("data", onData);
-
-    nextServerProcess.on("error", (err) => {
-      if (!started) reject(err);
-    });
-
-    nextServerProcess.on("exit", (code) => {
-      if (!started) reject(new Error(`Next.js server exited with code ${code}`));
-    });
-
-    setTimeout(() => {
-      if (!started) {
-        started = true;
-        nextServerProcess.stdout.removeListener("data", onData);
-        resolve();
-      }
-    }, 10000);
-  });
-}
-
-function stopNextServer() {
-  if (nextServerProcess && !nextServerProcess.killed) {
-    nextServerProcess.kill();
-    nextServerProcess = null;
-  }
-}
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -110,7 +29,7 @@ function createWindow() {
     show: false,
   });
 
-  const url = `http://127.0.0.1:${PORT}`;
+  const url = isDev ? `http://localhost:${PORT}` : PRODUCTION_URL;
 
   mainWindow.loadURL(url);
 
@@ -464,15 +383,7 @@ ipcMain.handle("sys:read-file", async (_event, filePath) => {
 
 // ─── App Lifecycle ───
 
-app.whenReady().then(async () => {
-  if (!isDev) {
-    try {
-      await startNextServer();
-    } catch (err) {
-      console.error("Failed to start Next.js server:", err);
-    }
-  }
-
+app.whenReady().then(() => {
   setupAutoUpdater();
   createWindow();
   createTray();
@@ -489,5 +400,4 @@ app.on("window-all-closed", () => {
 
 app.on("before-quit", () => {
   isQuitting = true;
-  stopNextServer();
 });
