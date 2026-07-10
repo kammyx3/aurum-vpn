@@ -3,7 +3,6 @@ const path = require("path");
 const { exec, spawn } = require("child_process");
 const fs = require("fs");
 const https = require("https");
-const yaml = require("js-yaml");
 
 const isDev = !app.isPackaged;
 const PORT = 3000;
@@ -131,10 +130,11 @@ ipcMain.on("window-close", () => mainWindow?.close());
 
 ipcMain.handle("window-is-maximized", () => mainWindow?.isMaximized() ?? false);
 
-// ─── Custom Auto-Updater (uses Node.js https, not Electron net) ───
+// ─── Custom Auto-Updater (checks via Vercel API, downloads from GitHub CDN) ───
 
-const GH_OWNER = "kammyx3";
-const GH_REPO = "aurum-vpn";
+const UPDATE_API_URL = isDev
+  ? "http://localhost:3000/api/updates/latest"
+  : "https://aurum-vpn.vercel.app/api/updates/latest";
 
 function isNewerVersion(latest, current) {
   const l = latest.split(".").map(Number);
@@ -146,49 +146,28 @@ function isNewerVersion(latest, current) {
   return false;
 }
 
-function fetchWithRedirect(urlStr, token, extraHeaders) {
-  let redirectCount = 0;
+function httpsGet(urlStr) {
   return new Promise((resolve, reject) => {
-    function doFetch(url) {
-      const parsed = new URL(url);
-      const opts = {
-        hostname: parsed.hostname,
-        path: parsed.pathname + parsed.search,
-        headers: Object.assign({ "User-Agent": "AURUM-VPN" }, extraHeaders),
-      };
-      if (token) opts.headers["Authorization"] = `Bearer ${token}`;
-      https.get(opts, (res) => {
-        if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
-          if (redirectCount++ > 10) { reject(new Error("Too many redirects")); return; }
-          doFetch(new URL(res.headers.location, url).href);
-          return;
-        }
-        let data = "";
-        res.on("data", (c) => (data += c));
-        res.on("end", () => {
-          if (res.statusCode >= 400) reject(new Error(`HTTP ${res.statusCode}`));
-          else resolve(data);
-        });
-      }).on("error", reject);
-    }
-    doFetch(urlStr);
+    const parsed = new URL(urlStr);
+    const opts = { hostname: parsed.hostname, path: parsed.pathname + parsed.search, headers: { "User-Agent": "AURUM-VPN" } };
+    https.get(opts, (res) => {
+      let data = "";
+      res.on("data", (c) => (data += c));
+      res.on("end", () => {
+        if (res.statusCode >= 400) reject(new Error(`HTTP ${res.statusCode}`));
+        else resolve(data);
+      });
+    }).on("error", reject);
   });
 }
 
-function downloadFile(urlStr, destPath, token, onProgress) {
-  let redirectCount = 0;
+function downloadFile(urlStr, destPath, onProgress) {
   return new Promise((resolve, reject) => {
     function doDownload(url) {
       const parsed = new URL(url);
-      const opts = {
-        hostname: parsed.hostname,
-        path: parsed.pathname + parsed.search,
-        headers: { "User-Agent": "AURUM-VPN" },
-      };
-      if (token) opts.headers["Authorization"] = `Bearer ${token}`;
+      const opts = { hostname: parsed.hostname, path: parsed.pathname + parsed.search, headers: { "User-Agent": "AURUM-VPN" } };
       https.get(opts, (res) => {
         if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
-          if (redirectCount++ > 10) { reject(new Error("Too many redirects")); return; }
           doDownload(new URL(res.headers.location, url).href);
           return;
         }
@@ -196,10 +175,7 @@ function downloadFile(urlStr, destPath, token, onProgress) {
         const total = parseInt(res.headers["content-length"] || "0", 10);
         let transferred = 0;
         const file = fs.createWriteStream(destPath);
-        res.on("data", (chunk) => {
-          transferred += chunk.length;
-          if (onProgress && total) onProgress(transferred, total);
-        });
+        res.on("data", (chunk) => { transferred += chunk.length; if (onProgress && total) onProgress(transferred, total); });
         res.pipe(file);
         file.on("finish", () => file.close(() => resolve()));
         file.on("error", reject);
@@ -210,21 +186,19 @@ function downloadFile(urlStr, destPath, token, onProgress) {
 }
 
 let updateFilePath = null;
-const updateToken = process.env.GH_TOKEN || process.env.GITHUB_TOKEN;
 
 async function customCheckForUpdates() {
-  console.log("[updater] Custom check...");
+  console.log("[updater] Checking:", UPDATE_API_URL);
   try {
-    const tagResponse = await fetchWithRedirect(`https://github.com/${GH_OWNER}/${GH_REPO}/releases/latest`, updateToken, { "Accept": "application/json" });
-    const { tag_name: tag } = JSON.parse(tagResponse);
-    const ymlResponse = await fetchWithRedirect(`https://github.com/${GH_OWNER}/${GH_REPO}/releases/download/${tag}/latest.yml`, updateToken);
-    const info = yaml.load(ymlResponse);
+    const response = await httpsGet(UPDATE_API_URL);
+    const data = JSON.parse(response);
+    if (!data.version) { console.log("[updater] No releases found"); return; }
     const current = app.getVersion();
-    if (isNewerVersion(info.version, current)) {
-      console.log("[updater] Update available:", info.version);
-      mainWindow?.webContents.send("updater:update-available", { version: info.version, releaseDate: info.releaseDate });
+    if (isNewerVersion(data.version, current)) {
+      console.log("[updater] Update available:", data.version);
+      mainWindow?.webContents.send("updater:update-available", { version: data.version, releaseDate: data.releaseDate });
     } else {
-      console.log("[updater] No update:", current, "vs", info.version);
+      console.log("[updater] No update:", current, "vs", data.version);
     }
   } catch (err) {
     console.error("[updater] Check failed:", err.message);
@@ -233,24 +207,22 @@ async function customCheckForUpdates() {
 }
 
 async function customDownloadUpdate() {
-  console.log("[updater] Custom download...");
+  console.log("[updater] Downloading...");
   try {
-    const tagResponse = await fetchWithRedirect(`https://github.com/${GH_OWNER}/${GH_REPO}/releases/latest`, updateToken, { "Accept": "application/json" });
-    const { tag_name: tag } = JSON.parse(tagResponse);
-    const ymlResponse = await fetchWithRedirect(`https://github.com/${GH_OWNER}/${GH_REPO}/releases/download/${tag}/latest.yml`, updateToken);
-    const info = yaml.load(ymlResponse);
-    const fileInfo = info.files[0];
-    const downloadUrl = `https://github.com/${GH_OWNER}/${GH_REPO}/releases/download/${tag}/${fileInfo.url}`;
+    const response = await httpsGet(UPDATE_API_URL);
+    const data = JSON.parse(response);
+    if (!data.files || !data.files[0]) { throw new Error("No download URL available"); }
+    const fileInfo = data.files[0];
     const cacheDir = path.join(app.getPath("userData"), "update-cache");
     fs.mkdirSync(cacheDir, { recursive: true });
-    updateFilePath = path.join(cacheDir, fileInfo.url);
-    mainWindow?.webContents.send("updater:download-progress", { percent: 0, transferred: 0, total: info.size || 0 });
+    updateFilePath = path.join(cacheDir, fileInfo.url.split("/").pop());
+    mainWindow?.webContents.send("updater:download-progress", { percent: 0, transferred: 0, total: fileInfo.size || 0 });
     let lastPct = -1;
-    await downloadFile(downloadUrl, updateFilePath, updateToken, (transferred, total) => {
+    await downloadFile(fileInfo.url, updateFilePath, (transferred, total) => {
       const pct = Math.round((transferred / total) * 100);
       if (pct !== lastPct) { lastPct = pct; mainWindow?.webContents.send("updater:download-progress", { percent: pct, transferred, total }); }
     });
-    mainWindow?.webContents.send("updater:update-downloaded", { version: info.version });
+    mainWindow?.webContents.send("updater:update-downloaded", { version: data.version });
   } catch (err) {
     console.error("[updater] Download failed:", err.message);
     mainWindow?.webContents.send("updater:error", err.message);

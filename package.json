@@ -18,6 +18,7 @@
     "release:win": "electron-builder --win --publish always",
     "release:mac": "electron-builder --mac --publish always",
     "release:linux": "electron-builder --linux --publish always",
+    "publish:update": "node scripts/publish-update.js",
     "deploy:web": "vercel deploy --yes --prod",
     "lint": "eslint"
   },

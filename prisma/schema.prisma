@@ -86,3 +86,15 @@ model AuditLog {
   detail    String   @default("")
   createdAt DateTime @default(now())
 }
+
+model UpdateRelease {
+  id         String   @id @default(cuid())
+  version    String
+  notes      String   @default("")
+  releaseDate DateTime @default(now())
+  fileUrl    String
+  fileSha512 String
+  fileSize   BigInt   @default(0)
+  portableUrl String?
+  createdAt  DateTime @default(now())
+}
