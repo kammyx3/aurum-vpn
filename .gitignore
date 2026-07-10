@@ -2,6 +2,8 @@ node_modules
 .next
 dist-electron
 dist
+public/releases
+src/generated
 *.db
 *.db-journal
 .env
