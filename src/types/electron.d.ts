@@ -1,4 +1,5 @@
 interface ElectronAPI {
+  rendererReady?: () => void;
   minimize: () => void;
   maximize: () => void;
   close: () => void;
@@ -19,6 +20,7 @@ interface ElectronAPI {
   };
   updater: {
     checkForUpdates: () => void;
+    downloadUpdate?: () => void;
     installUpdate: () => void;
     onUpdateAvailable: (cb: (event: unknown, info: { version: string; releaseDate: string }) => void) => void;
     onDownloadProgress: (cb: (event: unknown, progress: { percent: number; transferred: number; total: number }) => void) => void;
