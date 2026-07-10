@@ -36,7 +36,7 @@ export default function Topbar({ onMenuClick }: TopbarProps) {
   };
 
   return (
-    <header className="sticky top-0 z-30 h-14 border-b border-zinc-200 dark:border-zinc-800 bg-white/80 dark:bg-[#09090b]/80 backdrop-blur-xl flex items-center justify-between px-4 shrink-0">
+    <header className="z-30 h-14 border-b border-zinc-200 dark:border-zinc-800 bg-white/80 dark:bg-[#09090b]/80 backdrop-blur-xl flex items-center justify-between px-4 shrink-0">
       <div className="flex items-center gap-3">
         <button
           onClick={onMenuClick}
