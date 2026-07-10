@@ -1,0 +1,88 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  username  String   @unique
+  password  String
+  plan      String   @default("free")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model VpnServer {
+  id            String   @id @default(cuid())
+  name          String   @default("AURUM VPN Server")
+  mode          String   @default("demo")
+  interfaceName String   @default("wg0")
+  endpointHost  String   @default("vpn.example.com")
+  listenPort    Int      @default(51820)
+  subnet        String   @default("10.8.0.0/24")
+  dns           String   @default("1.1.1.1")
+  mtu           Int      @default(1420)
+  publicKey     String   @default("")
+  status        String   @default("online")
+  region        String   @default("us-east-1")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  devices       Device[]
+}
+
+model Device {
+  id              String   @id @default(cuid())
+  name            String
+  platform        String   @default("unknown")
+  publicKey       String
+  privateKey      String   @default("")
+  presharedKey    String   @default("")
+  assignedIp      String
+  enabled         Boolean  @default(true)
+  notes           String   @default("")
+  planRequired    String   @default("free")
+  vpnServerId     String
+  vpnServer       VpnServer @relation(fields: [vpnServerId], references: [id], onDelete: Cascade)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  lastHandshake   DateTime?
+  uploadBytes     BigInt   @default(0)
+  downloadBytes   BigInt   @default(0)
+  activityLogs    ActivityLog[]
+}
+
+model ActivityLog {
+  id        String   @id @default(cuid())
+  deviceId  String?
+  device    Device?  @relation(fields: [deviceId], references: [id], onDelete: SetNull)
+  type      String
+  message   String
+  metadata  String   @default("{}")
+  createdAt DateTime @default(now())
+}
+
+model UsageSample {
+  id          String   @id @default(cuid())
+  deviceId    String
+  uploadBytes BigInt   @default(0)
+  downloadBytes BigInt @default(0)
+  recordedAt  DateTime @default(now())
+}
+
+model AppSettings {
+  id    String @id @default("singleton")
+  theme String @default("system")
+  plan  String @default("free")
+  data  String @default("{}")
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  action    String
+  detail    String   @default("")
+  createdAt DateTime @default(now())
+}

@@ -1,0 +1,118 @@
+{
+  "name": "aurum-vpn",
+  "version": "1.0.0",
+  "description": "AURUM VPN - Secure VPN Management Panel",
+  "main": "electron/main.js",
+  "author": "AURUM VPN",
+  "license": "MIT",
+  "scripts": {
+    "dev": "concurrently \"npm run dev:next\" \"wait-on http://localhost:3000 && electron .\"",
+    "dev:next": "next dev",
+    "build": "next build && node scripts/postbuild.js",
+    "start": "next start",
+    "electron:dev": "electron .",
+    "electron:build": "npm run build && electron-builder",
+    "electron:build:win": "npm run build && electron-builder --win",
+    "electron:build:mac": "npm run build && electron-builder --mac",
+    "electron:build:linux": "npm run build && electron-builder --linux",
+    "release:win": "npm run build && electron-builder --win --publish always",
+    "release:mac": "npm run build && electron-builder --mac --publish always",
+    "release:linux": "npm run build && electron-builder --linux --publish always",
+    "deploy:web": "vercel deploy --yes --prod",
+    "lint": "eslint"
+  },
+  "build": {
+    "appId": "com.aurum.vpn",
+    "productName": "AURUM VPN",
+    "directories": {
+      "output": "dist-electron"
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "aurum-vpn",
+      "repo": "aurum-vpn"
+    },
+    "files": [
+      "electron/**/*",
+      ".next/standalone/**/*",
+      "prisma/**/*",
+      "node_modules/.prisma/**/*",
+      "node_modules/@prisma/**/*",
+      "node_modules/@libsql/**/*",
+      "node_modules/electron-updater/**/*",
+      "node_modules/js-yaml/**/*",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "prisma/dev.db",
+        "to": "data/dev.db"
+      }
+    ],
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ],
+      "icon": "public/icons/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "installerIcon": "public/icons/icon.ico",
+      "uninstallerIcon": "public/icons/icon.ico"
+    },
+    "mac": {
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "icon": "public/icons/icon.png"
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "icon": "public/icons/icon.png"
+    }
+  },
+  "dependencies": {
+    "@libsql/client": "^0.17.4",
+    "@prisma/adapter-libsql": "^7.8.0",
+    "@prisma/client": "^7.8.0",
+    "bcryptjs": "^3.0.2",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.525.0",
+    "next": "^16.2.10",
+    "qrcode": "^1.5.4",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "recharts": "^2.15.3",
+    "tailwind-merge": "^3.3.1",
+    "electron-updater": "^6.6.2",
+    "zod": "^3.25.67",
+    "zustand": "^5.0.5"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.11",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/node": "^22.15.23",
+    "@types/qrcode": "^1.5.5",
+    "@types/react": "^19.1.2",
+    "@types/react-dom": "^19.1.2",
+    "concurrently": "^9.1.2",
+    "dotenv": "^16.5.0",
+    "electron": "^35.3.0",
+    "electron-builder": "^26.0.12",
+    "eslint": "^9.39.4",
+    "eslint-config-next": "^16.2.10",
+    "prisma": "^7.2.0",
+    "sharp": "^0.35.3",
+    "tailwindcss": "^4.1.11",
+    "to-ico": "^1.1.5",
+    "tsx": "^4.20.3",
+    "wait-on": "^8.0.3"
+  }
+}
