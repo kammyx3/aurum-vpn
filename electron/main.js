@@ -1,7 +1,9 @@
 const { app, BrowserWindow, ipcMain, Tray, Menu, nativeImage, shell, dialog } = require("electron");
 const path = require("path");
-const { exec } = require("child_process");
+const { exec, spawn } = require("child_process");
 const fs = require("fs");
+const https = require("https");
+const yaml = require("js-yaml");
 
 const isDev = !app.isPackaged;
 const PORT = 3000;
@@ -129,114 +131,146 @@ ipcMain.on("window-close", () => mainWindow?.close());
 
 ipcMain.handle("window-is-maximized", () => mainWindow?.isMaximized() ?? false);
 
-// ─── Auto-Updater ───
+// ─── Custom Auto-Updater (uses Node.js https, not Electron net) ───
 
-let autoUpdater = null;
-let rendererReady = false;
-let updateCheckScheduled = false;
+const GH_OWNER = "kammyx3";
+const GH_REPO = "aurum-vpn";
 
-function scheduleUpdateCheck() {
-  if (updateCheckScheduled || !autoUpdater || !rendererReady) return;
-  updateCheckScheduled = true;
-  console.log("[updater] renderer ready, checking for updates...");
-  autoUpdater.checkForUpdates().catch((err) => {
-    console.error("[updater] Startup update check failed:", err.message);
+function isNewerVersion(latest, current) {
+  const l = latest.split(".").map(Number);
+  const c = current.split(".").map(Number);
+  for (let i = 0; i < 3; i++) {
+    if ((l[i] || 0) > (c[i] || 0)) return true;
+    if ((l[i] || 0) < (c[i] || 0)) return false;
+  }
+  return false;
+}
+
+function fetchWithRedirect(urlStr, token, extraHeaders) {
+  let redirectCount = 0;
+  return new Promise((resolve, reject) => {
+    function doFetch(url) {
+      const parsed = new URL(url);
+      const opts = {
+        hostname: parsed.hostname,
+        path: parsed.pathname + parsed.search,
+        headers: Object.assign({ "User-Agent": "AURUM-VPN" }, extraHeaders),
+      };
+      if (token) opts.headers["Authorization"] = `Bearer ${token}`;
+      https.get(opts, (res) => {
+        if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+          if (redirectCount++ > 10) { reject(new Error("Too many redirects")); return; }
+          doFetch(new URL(res.headers.location, url).href);
+          return;
+        }
+        let data = "";
+        res.on("data", (c) => (data += c));
+        res.on("end", () => {
+          if (res.statusCode >= 400) reject(new Error(`HTTP ${res.statusCode}`));
+          else resolve(data);
+        });
+      }).on("error", reject);
+    }
+    doFetch(urlStr);
   });
 }
 
-function setupAutoUpdater() {
-  console.log("[updater] isDev:", isDev, "isPackaged:", app.isPackaged);
-  if (isDev) return;
-
-  try {
-    const { autoUpdater: updater } = require("electron-updater");
-    autoUpdater = updater;
-    autoUpdater.autoDownload = false;
-    autoUpdater.autoInstallOnAppQuit = true;
-
-    const token = process.env.GH_TOKEN || process.env.GITHUB_TOKEN;
-    if (token) {
-      autoUpdater.requestHeaders = { Authorization: `token ${token}` };
-      console.log("[updater] GitHub token configured");
-    } else {
-      console.log("[updater] WARNING: No GH_TOKEN set, GitHub API may rate-limit");
+function downloadFile(urlStr, destPath, token, onProgress) {
+  let redirectCount = 0;
+  return new Promise((resolve, reject) => {
+    function doDownload(url) {
+      const parsed = new URL(url);
+      const opts = {
+        hostname: parsed.hostname,
+        path: parsed.pathname + parsed.search,
+        headers: { "User-Agent": "AURUM-VPN" },
+      };
+      if (token) opts.headers["Authorization"] = `Bearer ${token}`;
+      https.get(opts, (res) => {
+        if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+          if (redirectCount++ > 10) { reject(new Error("Too many redirects")); return; }
+          doDownload(new URL(res.headers.location, url).href);
+          return;
+        }
+        if (res.statusCode >= 400) { reject(new Error(`HTTP ${res.statusCode}`)); return; }
+        const total = parseInt(res.headers["content-length"] || "0", 10);
+        let transferred = 0;
+        const file = fs.createWriteStream(destPath);
+        res.on("data", (chunk) => {
+          transferred += chunk.length;
+          if (onProgress && total) onProgress(transferred, total);
+        });
+        res.pipe(file);
+        file.on("finish", () => file.close(() => resolve()));
+        file.on("error", reject);
+      }).on("error", reject);
     }
+    doDownload(urlStr);
+  });
+}
 
-    autoUpdater.logger = {
-      info: (msg) => console.log("[updater]", msg),
-      warn: (msg) => console.warn("[updater]", msg),
-      error: (msg) => console.error("[updater]", msg),
-      debug: (msg) => console.log("[updater:debug]", msg),
-    };
+let updateFilePath = null;
+const updateToken = process.env.GH_TOKEN || process.env.GITHUB_TOKEN;
 
-    autoUpdater.on("update-available", (info) => {
+async function customCheckForUpdates() {
+  console.log("[updater] Custom check...");
+  try {
+    const tagResponse = await fetchWithRedirect(`https://github.com/${GH_OWNER}/${GH_REPO}/releases/latest`, updateToken, { "Accept": "application/json" });
+    const { tag_name: tag } = JSON.parse(tagResponse);
+    const ymlResponse = await fetchWithRedirect(`https://github.com/${GH_OWNER}/${GH_REPO}/releases/download/${tag}/latest.yml`, updateToken);
+    const info = yaml.load(ymlResponse);
+    const current = app.getVersion();
+    if (isNewerVersion(info.version, current)) {
       console.log("[updater] Update available:", info.version);
-      if (mainWindow) {
-        mainWindow.webContents.send("updater:update-available", {
-          version: info.version,
-          releaseDate: info.releaseDate,
-        });
-      }
-    });
-
-    autoUpdater.on("download-progress", (progress) => {
-      if (mainWindow) {
-        mainWindow.webContents.send("updater:download-progress", {
-          percent: progress.percent,
-          transferred: progress.transferred,
-          total: progress.total,
-        });
-      }
-    });
-
-    autoUpdater.on("update-downloaded", (info) => {
-      console.log("[updater] Update downloaded:", info.version);
-      if (mainWindow) {
-        mainWindow.webContents.send("updater:update-downloaded", {
-          version: info.version,
-        });
-      }
-    });
-
-    autoUpdater.on("error", (err) => {
-      console.error("[updater] Error:", err.message, err.stack);
-      if (mainWindow) {
-        mainWindow.webContents.send("updater:error", err.message);
-      }
-    });
+      mainWindow?.webContents.send("updater:update-available", { version: info.version, releaseDate: info.releaseDate });
+    } else {
+      console.log("[updater] No update:", current, "vs", info.version);
+    }
   } catch (err) {
-    console.error("[updater] Failed to load electron-updater:", err.message);
+    console.error("[updater] Check failed:", err.message);
+    mainWindow?.webContents.send("updater:error", err.message);
   }
 }
 
+async function customDownloadUpdate() {
+  console.log("[updater] Custom download...");
+  try {
+    const tagResponse = await fetchWithRedirect(`https://github.com/${GH_OWNER}/${GH_REPO}/releases/latest`, updateToken, { "Accept": "application/json" });
+    const { tag_name: tag } = JSON.parse(tagResponse);
+    const ymlResponse = await fetchWithRedirect(`https://github.com/${GH_OWNER}/${GH_REPO}/releases/download/${tag}/latest.yml`, updateToken);
+    const info = yaml.load(ymlResponse);
+    const fileInfo = info.files[0];
+    const downloadUrl = `https://github.com/${GH_OWNER}/${GH_REPO}/releases/download/${tag}/${fileInfo.url}`;
+    const cacheDir = path.join(app.getPath("userData"), "update-cache");
+    fs.mkdirSync(cacheDir, { recursive: true });
+    updateFilePath = path.join(cacheDir, fileInfo.url);
+    mainWindow?.webContents.send("updater:download-progress", { percent: 0, transferred: 0, total: info.size || 0 });
+    let lastPct = -1;
+    await downloadFile(downloadUrl, updateFilePath, updateToken, (transferred, total) => {
+      const pct = Math.round((transferred / total) * 100);
+      if (pct !== lastPct) { lastPct = pct; mainWindow?.webContents.send("updater:download-progress", { percent: pct, transferred, total }); }
+    });
+    mainWindow?.webContents.send("updater:update-downloaded", { version: info.version });
+  } catch (err) {
+    console.error("[updater] Download failed:", err.message);
+    mainWindow?.webContents.send("updater:error", err.message);
+  }
+}
+
+function customInstallUpdate() {
+  if (!updateFilePath) { mainWindow?.webContents.send("updater:error", "No update downloaded yet"); return; }
+  console.log("[updater] Installing:", updateFilePath);
+  spawn(updateFilePath, ["--updated"], { detached: true, stdio: "ignore" }).unref();
+  app.quit();
+}
+
+ipcMain.on("updater:check", () => customCheckForUpdates());
+ipcMain.on("updater:download", () => customDownloadUpdate());
+ipcMain.on("updater:install", () => customInstallUpdate());
+
 ipcMain.on("renderer:ready", () => {
-  console.log("[updater] renderer signaled ready");
-  rendererReady = true;
-  scheduleUpdateCheck();
-});
-
-ipcMain.on("updater:check", () => {
-  if (autoUpdater) {
-    autoUpdater.checkForUpdates().catch((err) => {
-      console.error("[updater] Check for updates failed:", err.message);
-      mainWindow?.webContents.send("updater:error", err.message);
-    });
-  }
-});
-
-ipcMain.on("updater:download", () => {
-  if (autoUpdater) {
-    autoUpdater.downloadUpdate().catch((err) => {
-      console.error("[updater] Download failed:", err.message);
-      mainWindow?.webContents.send("updater:error", err.message);
-    });
-  }
-});
-
-ipcMain.on("updater:install", () => {
-  if (autoUpdater) {
-    autoUpdater.quitAndInstall(false, true);
-  }
+  console.log("[updater] renderer ready, checking...");
+  customCheckForUpdates();
 });
 
 // ─── IPC Handlers ─── WireGuard System Integration ───
@@ -428,17 +462,13 @@ ipcMain.handle("sys:read-file", async (_event, filePath) => {
 // ─── App Lifecycle ───
 
 app.whenReady().then(() => {
-  setupAutoUpdater();
   createWindow();
   createTray();
 
-  setTimeout(() => {
-    if (!rendererReady) {
-      console.log("[updater] fallback: renderer not ready after 15s, checking anyway");
-      rendererReady = true;
-    }
-    scheduleUpdateCheck();
-  }, 15000);
+  if (!isDev) {
+    console.log("[updater] scheduled check at startup");
+    setTimeout(() => customCheckForUpdates(), 5000);
+  }
 
   app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
