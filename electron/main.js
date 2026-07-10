@@ -134,6 +134,7 @@ ipcMain.handle("window-is-maximized", () => mainWindow?.isMaximized() ?? false);
 let autoUpdater = null;
 
 function setupAutoUpdater() {
+  console.log("[updater] isDev:", isDev, "isPackaged:", app.isPackaged);
   if (isDev) return;
 
   try {
@@ -390,9 +391,12 @@ app.whenReady().then(() => {
 
   setTimeout(() => {
     if (autoUpdater) {
+      console.log("[updater] checking for updates...");
       autoUpdater.checkForUpdates().catch((err) => {
-        console.error("Startup update check failed:", err.message);
+        console.error("[updater] Startup update check failed:", err.message);
       });
+    } else {
+      console.log("[updater] autoUpdater is null, skipping check");
     }
   }, 3000);
 
