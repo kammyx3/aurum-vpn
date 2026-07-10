@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 export async function GET() {
   try {
     const release = await prisma.updateRelease.findFirst({
-      orderBy: { createdAt: "desc" },
+      orderBy: { releaseDate: "desc" },
     });
     if (!release) {
       return NextResponse.json(
