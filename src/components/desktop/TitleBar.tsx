@@ -12,6 +12,7 @@ export default function TitleBar() {
   const [updateInfo, setUpdateInfo] = useState<{ version?: string; releaseDate?: string }>({});
   const [downloadProgress, setDownloadProgress] = useState(0);
   const [showUpdatePanel, setShowUpdatePanel] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
     const api = window.electronAPI;
@@ -39,8 +40,9 @@ export default function TitleBar() {
       setUpdateInfo((prev) => ({ ...prev, version: info.version }));
     });
 
-    api.updater?.onUpdateError?.(() => {
+    api.updater?.onUpdateError?.((_event: unknown, message: string) => {
       setUpdateStatus("error");
+      setErrorMessage(message || "Unknown error");
     });
   }, []);
 
@@ -136,6 +138,7 @@ export default function TitleBar() {
           status={updateStatus}
           updateInfo={updateInfo}
           downloadProgress={downloadProgress}
+          errorMessage={errorMessage}
           onCheck={handleCheckUpdate}
           onDownload={handleDownloadUpdate}
           onInstall={handleInstallUpdate}
@@ -150,6 +153,7 @@ function UpdatePanel({
   status,
   updateInfo,
   downloadProgress,
+  errorMessage,
   onCheck,
   onDownload,
   onInstall,
@@ -158,6 +162,7 @@ function UpdatePanel({
   status: UpdateStatus;
   updateInfo: { version?: string; releaseDate?: string };
   downloadProgress: number;
+  errorMessage: string;
   onCheck: () => void;
   onDownload: () => void;
   onInstall: () => void;
@@ -265,7 +270,8 @@ function UpdatePanel({
 
         {status === "error" && (
           <div className="text-center space-y-3">
-            <p className="text-xs text-red-400">Update check failed. Try again later.</p>
+            <p className="text-xs text-red-400">Update check failed</p>
+            <p className="text-[10px] text-zinc-500 break-all">{errorMessage}</p>
             <button
               type="button"
               onClick={onCheck}

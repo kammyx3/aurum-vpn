@@ -143,7 +143,23 @@ function setupAutoUpdater() {
     autoUpdater.autoDownload = false;
     autoUpdater.autoInstallOnAppQuit = true;
 
+    const token = process.env.GH_TOKEN || process.env.GITHUB_TOKEN;
+    if (token) {
+      autoUpdater.requestHeaders = { Authorization: `token ${token}` };
+      console.log("[updater] GitHub token configured");
+    } else {
+      console.log("[updater] WARNING: No GH_TOKEN set, GitHub API may rate-limit");
+    }
+
+    autoUpdater.logger = {
+      info: (msg) => console.log("[updater]", msg),
+      warn: (msg) => console.warn("[updater]", msg),
+      error: (msg) => console.error("[updater]", msg),
+      debug: (msg) => console.log("[updater:debug]", msg),
+    };
+
     autoUpdater.on("update-available", (info) => {
+      console.log("[updater] Update available:", info.version);
       if (mainWindow) {
         mainWindow.webContents.send("updater:update-available", {
           version: info.version,
@@ -163,6 +179,7 @@ function setupAutoUpdater() {
     });
 
     autoUpdater.on("update-downloaded", (info) => {
+      console.log("[updater] Update downloaded:", info.version);
       if (mainWindow) {
         mainWindow.webContents.send("updater:update-downloaded", {
           version: info.version,
@@ -171,13 +188,13 @@ function setupAutoUpdater() {
     });
 
     autoUpdater.on("error", (err) => {
-      console.error("Auto-updater error:", err.message);
+      console.error("[updater] Error:", err.message, err.stack);
       if (mainWindow) {
         mainWindow.webContents.send("updater:error", err.message);
       }
     });
   } catch (err) {
-    console.error("Failed to load electron-updater:", err.message);
+    console.error("[updater] Failed to load electron-updater:", err.message);
   }
 }
 
