@@ -14,6 +14,7 @@ export default function SignupPage() {
   const [displayName, setDisplayName] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [confirmed, setConfirmed] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,7 +33,11 @@ export default function SignupPage() {
 
     try {
       const supabase = createClient();
-      const { data: authData, error: authError } = await supabase.auth.signUp({ email, password });
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
+      });
 
       if (authError) {
         setError(authError.message);
@@ -60,14 +65,42 @@ export default function SignupPage() {
         }
       }
 
-      router.push("/app/map");
-      router.refresh();
+      if (authData.session) {
+        router.push("/app/map");
+        router.refresh();
+      } else {
+        setConfirmed(true);
+      }
     } catch {
       setError("Connection error. Please try again.");
     } finally {
       setLoading(false);
     }
   };
+
+  if (confirmed) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <div className="w-full max-w-sm text-center">
+          <div className="inline-flex items-center justify-center h-12 w-12 rounded-xl bg-emerald-500/10 mb-4">
+            <Shield className="h-6 w-6 text-emerald-500" />
+          </div>
+          <h1 className="text-lg font-semibold text-foreground mb-2">Check your email</h1>
+          <p className="text-sm text-muted-foreground mb-6">
+            We&apos;ve sent a confirmation link to <strong className="text-foreground">{email}</strong>.
+            Click the link to verify your account, then sign in.
+          </p>
+          <Link
+            href="/login"
+            className="inline-flex items-center gap-1.5 text-xs text-[#c8a54e] hover:text-[#d4b85e]"
+          >
+            <ArrowLeft className="h-3.5 w-3.5" />
+            Go to sign in
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">

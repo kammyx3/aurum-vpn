@@ -1,7 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-const publicPaths = ["/", "/login", "/signup", "/forgot-password", "/releases", "/pricing"];
+const publicPaths = ["/", "/login", "/signup", "/forgot-password", "/releases", "/pricing", "/auth/callback"];
 const apiPrefix = "/api";
 const authApiPaths = ["/api/auth", "/api/billing/plans", "/api/billing/perks", "/api/updates", "/api/app-update", "/api/nodes"];
 
