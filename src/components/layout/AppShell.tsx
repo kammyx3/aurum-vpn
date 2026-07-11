@@ -6,7 +6,7 @@ import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
 import { useAppStore } from "@/stores/appStore";
 import { ToastProvider } from "@/components/ui/toast";
-import { createClient, apiFetch, getStoredToken, storeToken, clearToken } from "@/lib/supabase/client";
+import { apiFetch, getStoredToken, clearToken } from "@/lib/supabase/client";
 import { Loader2 } from "lucide-react";
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
@@ -15,8 +15,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const [checking, setChecking] = useState(true);
 
   useEffect(() => {
-    const supabase = createClient();
-
     async function check() {
       const token = getStoredToken();
       if (!token) {
@@ -34,7 +32,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             setPlan(slug === "free" ? "free" : "premium");
           }
         } else {
-          // Token invalid, clear and redirect
           clearToken();
           router.replace("/login");
           return;
@@ -45,20 +42,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     }
 
     check();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session) {
-        storeToken(session);
-        check();
-      } else {
-        clearToken();
-        setUser(null);
-        setPlan("free");
-        router.replace("/login");
-      }
-    });
-
-    return () => subscription.unsubscribe();
   }, [router, setUser, setPlan]);
 
   if (checking) {
