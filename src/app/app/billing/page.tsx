@@ -61,7 +61,7 @@ export default function BillingPage() {
     }
   };
 
-  if (loading) return <div className="flex items-center justify-center h-64"><Loader2 className="h-6 w-6 animate-spin text-zinc-500" /></div>;
+  if (loading) return <div className="flex items-center justify-center h-64"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>;
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
@@ -71,20 +71,20 @@ export default function BillingPage() {
       </div>
 
       <div className="p-4 rounded-lg bg-zinc-900/50 border border-zinc-800">
-        <label className="text-[11px] font-medium text-zinc-500 uppercase tracking-wider">Current Plan</label>
+        <label className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Current Plan</label>
         <div className="flex items-center justify-between mt-1">
           <div className="flex items-center gap-2">
-            <Crown className={`h-4 w-4 ${currentPlan === "free" ? "text-zinc-500" : "text-[#c8a54e]"}`} />
+            <Crown className={`h-4 w-4 ${currentPlan === "free" ? "text-muted-foreground" : "text-[#c8a54e]"}`} />
             <span className="text-sm text-zinc-200 font-medium capitalize">{currentPlan || "Free"}</span>
           </div>
-          <span className="text-[11px] text-zinc-500">
+          <span className="text-[11px] text-muted-foreground">
             {currentPlan === "free" ? "No active subscription" : "Active"}
           </span>
         </div>
       </div>
 
       <div className="space-y-2">
-        <h2 className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Available Plans</h2>
+        <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Available Plans</h2>
         {plans.map((plan) => {
           const isCurrent = plan.slug === currentPlan;
           const features: string[] = Object.entries(JSON.parse(plan.features || "{}"))
@@ -99,7 +99,7 @@ export default function BillingPage() {
                     <h3 className="text-sm font-semibold text-zinc-100">{plan.name}</h3>
                     {isCurrent && <CheckCircle className="h-4 w-4 text-[#c8a54e]" />}
                   </div>
-                  <p className="text-xs text-zinc-500">${(plan.priceMonthly / 100).toFixed(2)}/mo &middot; {plan.maxDevices} devices</p>
+                  <p className="text-xs text-muted-foreground">${(plan.priceMonthly / 100).toFixed(2)}/mo &middot; {plan.maxDevices} devices</p>
                 </div>
                 {!isCurrent && (
                   <button

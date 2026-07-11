@@ -27,7 +27,7 @@ export default function ReleasesPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#09090b] text-zinc-200">
+    <div className="min-h-screen bg-background text-zinc-200">
       <div className="max-w-2xl mx-auto px-4 py-12">
         <Link
           href="/"
@@ -57,7 +57,7 @@ export default function ReleasesPage() {
           {releases.map((r) => (
             <div
               key={r.version}
-              className="border border-zinc-800 rounded-lg p-4 bg-[#111113]"
+              className="border border-zinc-800 rounded-lg p-4 bg-card"
             >
               <div className="flex items-center justify-between mb-2">
                 <h2 className="text-sm font-semibold">v{r.version}</h2>

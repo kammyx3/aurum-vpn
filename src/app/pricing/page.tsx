@@ -66,27 +66,27 @@ export default function PricingPage() {
     }
   };
 
-  if (loading) return <div className="min-h-screen bg-[#09090b] flex items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-zinc-500" /></div>;
+  if (loading) return <div className="min-h-screen bg-background flex items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>;
 
   return (
-    <div className="min-h-screen bg-[#09090b] text-zinc-200">
+    <div className="min-h-screen bg-background text-zinc-200">
       <div className="max-w-5xl mx-auto px-6 py-16">
         <div className="text-center mb-10">
           <div className="inline-flex items-center justify-center h-12 w-12 rounded-xl bg-[#c8a54e]/10 mb-4">
             <Shield className="h-6 w-6 text-[#c8a54e]" />
           </div>
           <h1 className="text-3xl font-bold tracking-tight">Choose your plan</h1>
-          <p className="text-zinc-500 mt-2 text-sm">Get the right VPN for your needs</p>
+          <p className="text-muted-foreground mt-2 text-sm">Get the right VPN for your needs</p>
 
           <div className="flex items-center justify-center gap-3 mt-6">
-            <span className={`text-xs ${!yearly ? "text-zinc-200 font-medium" : "text-zinc-500"}`}>Monthly</span>
+            <span className={`text-xs ${!yearly ? "text-zinc-200 font-medium" : "text-muted-foreground"}`}>Monthly</span>
             <button
               onClick={() => setYearly(!yearly)}
               className={`relative w-10 h-5 rounded-full transition-colors ${yearly ? "bg-[#c8a54e]" : "bg-zinc-700"}`}
             >
               <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-transform ${yearly ? "translate-x-5" : "translate-x-0.5"}`} />
             </button>
-            <span className={`text-xs ${yearly ? "text-zinc-200 font-medium" : "text-zinc-500"}`}>
+            <span className={`text-xs ${yearly ? "text-zinc-200 font-medium" : "text-muted-foreground"}`}>
               Yearly <span className="text-emerald-500 ml-1">Save up to 20%</span>
             </span>
           </div>
@@ -114,9 +114,9 @@ export default function PricingPage() {
                 <h3 className="text-sm font-semibold text-zinc-100">{plan.name}</h3>
                 <div className="mt-2">
                   <span className="text-2xl font-bold">{displayPrice}</span>
-                  {plan.priceMonthly > 0 && <span className="text-xs text-zinc-500 ml-1">/{yearly ? "yr" : "mo"}</span>}
+                  {plan.priceMonthly > 0 && <span className="text-xs text-muted-foreground ml-1">/{yearly ? "yr" : "mo"}</span>}
                 </div>
-                <p className="text-[11px] text-zinc-500 mt-1">{plan.maxDevices} device{plan.maxDevices > 1 ? "s" : ""}</p>
+                <p className="text-[11px] text-muted-foreground mt-1">{plan.maxDevices} device{plan.maxDevices > 1 ? "s" : ""}</p>
 
                 <ul className="mt-4 space-y-1.5">
                   {features.map((f) => (
@@ -132,7 +132,7 @@ export default function PricingPage() {
                   disabled={isCurrent}
                   className={`mt-5 w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-colors ${
                     isCurrent
-                      ? "bg-zinc-800 text-zinc-500 cursor-default"
+                      ? "bg-zinc-800 text-muted-foreground cursor-default"
                       : plan.priceMonthly === 0
                       ? "bg-zinc-800 hover:bg-zinc-700 text-zinc-200"
                       : "bg-[#c8a54e] hover:bg-[#b8963e] text-black"
@@ -145,7 +145,7 @@ export default function PricingPage() {
           })}
         </div>
 
-        <p className="text-center text-[11px] text-zinc-600 mt-8">
+        <p className="text-center text-[11px] text-muted-foreground mt-8">
           All plans include WireGuard VPN protocol, DNS leak protection, and 24/7 network monitoring.
           Prices shown are in USD.
         </p>

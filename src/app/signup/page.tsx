@@ -70,9 +70,9 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#09090b] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-sm">
-        <Link href="/login" className="inline-flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-300 mb-6">
+        <Link href="/login" className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-zinc-300 mb-6">
           <ArrowLeft className="h-3.5 w-3.5" />
           Back to login
         </Link>
@@ -82,7 +82,7 @@ export default function SignupPage() {
             <Shield className="h-6 w-6 text-[#c8a54e]" />
           </div>
           <h1 className="text-lg font-semibold text-zinc-100">Create account</h1>
-          <p className="text-sm text-zinc-500 mt-1">Get started with AURUM VPN</p>
+          <p className="text-sm text-muted-foreground mt-1">Get started with AURUM VPN</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -145,7 +145,7 @@ export default function SignupPage() {
           </button>
         </form>
 
-        <p className="mt-6 text-center text-xs text-zinc-500">
+        <p className="mt-6 text-center text-xs text-muted-foreground">
           Already have an account?{" "}
           <Link href="/login" className="text-[#c8a54e] hover:text-[#d4b85e] font-medium">Sign in</Link>
         </p>

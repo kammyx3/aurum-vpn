@@ -30,7 +30,7 @@ export default function AdminPage() {
     check();
   }, [router]);
 
-  if (loading) return <div className="flex items-center justify-center h-64"><Loader2 className="h-6 w-6 animate-spin text-zinc-500" /></div>;
+  if (loading) return <div className="flex items-center justify-center h-64"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>;
   if (!authorized) return null;
 
   const sections = [
@@ -56,7 +56,7 @@ export default function AdminPage() {
                 <Icon className="h-5 w-5 text-[#c8a54e]" />
                 <div>
                   <p className="text-sm font-medium text-zinc-200">{s.label}</p>
-                  <p className="text-[11px] text-zinc-500">{s.desc}</p>
+                  <p className="text-[11px] text-muted-foreground">{s.desc}</p>
                 </div>
               </div>
             </Link>

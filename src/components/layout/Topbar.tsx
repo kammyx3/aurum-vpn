@@ -43,11 +43,11 @@ export default function Topbar({ onMenuClick }: TopbarProps) {
   };
 
   return (
-    <header className="z-30 h-14 border-b border-zinc-200 dark:border-zinc-800 bg-white/80 dark:bg-[#09090b]/80 backdrop-blur-xl flex items-center justify-between px-4 shrink-0">
+    <header className="z-30 h-14 border-b border-zinc-200 dark:border-zinc-800 bg-white/80 dark:bg-background/80 backdrop-blur-xl flex items-center justify-between px-4 shrink-0">
       <div className="flex items-center gap-3">
         <button
           onClick={onMenuClick}
-          className="lg:hidden p-1.5 rounded-md text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+          className="lg:hidden p-1.5 rounded-md text-muted-foreground hover:text-zinc-800 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800"
         >
           <Menu className="size-5" />
         </button>
@@ -62,7 +62,7 @@ export default function Topbar({ onMenuClick }: TopbarProps) {
             "text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded",
             plan === "premium"
               ? "bg-[#c8a54e]/20 text-[#c8a54e]"
-              : "bg-zinc-100 dark:bg-zinc-800 text-zinc-500"
+              : "bg-zinc-100 dark:bg-zinc-800 text-muted-foreground"
           )}
         >
           {plan === "premium" ? "Premium" : "Free"}
@@ -71,7 +71,7 @@ export default function Topbar({ onMenuClick }: TopbarProps) {
         {user ? (
           <button
             onClick={handleLogout}
-            className="p-1.5 rounded-md text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+            className="p-1.5 rounded-md text-muted-foreground hover:text-zinc-800 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800"
             title="Sign Out"
           >
             <LogOut className="size-4" />
@@ -87,7 +87,7 @@ export default function Topbar({ onMenuClick }: TopbarProps) {
 
         <button
           onClick={toggleTheme}
-          className="p-1.5 rounded-md text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+          className="p-1.5 rounded-md text-muted-foreground hover:text-zinc-800 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800"
         >
           {theme === "dark" ? <Moon className="size-4" /> : <Sun className="size-4" />}
         </button>

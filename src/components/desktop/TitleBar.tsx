@@ -67,7 +67,7 @@ export default function TitleBar() {
   return (
     <>
       <div
-        className="h-9 flex items-center justify-between bg-[#0a0a0c] border-b border-zinc-800 select-none"
+        className="h-9 flex items-center justify-between bg-sidebar border-b border-zinc-800 select-none"
         style={{ WebkitAppRegion: "drag" } as React.CSSProperties}
       >
         <div className="flex items-center gap-2 pl-3">

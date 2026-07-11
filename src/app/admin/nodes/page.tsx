@@ -27,7 +27,7 @@ export default function AdminNodesPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <div className="flex items-center justify-center h-64"><Loader2 className="h-6 w-6 animate-spin text-zinc-500" /></div>;
+  if (loading) return <div className="flex items-center justify-center h-64"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>;
 
   return (
     <div>
@@ -49,12 +49,12 @@ export default function AdminNodesPage() {
               <span className={`h-2 w-2 rounded-full ${node.active ? "bg-emerald-500" : "bg-red-500"}`} />
               <div>
                 <p className="text-sm font-medium text-zinc-200">{node.name}</p>
-                <p className="text-[11px] text-zinc-500">{node.city}, {node.country}</p>
+                <p className="text-[11px] text-muted-foreground">{node.city}, {node.country}</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
               <span className="text-[10px] px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-400 capitalize">{node.tier}</span>
-              <span className="text-xs text-zinc-500">{node.loadPercent}%</span>
+              <span className="text-xs text-muted-foreground">{node.loadPercent}%</span>
             </div>
           </div>
         ))}

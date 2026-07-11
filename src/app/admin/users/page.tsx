@@ -23,7 +23,7 @@ export default function AdminUsersPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <div className="flex items-center justify-center h-64"><Loader2 className="h-6 w-6 animate-spin text-zinc-500" /></div>;
+  if (loading) return <div className="flex items-center justify-center h-64"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>;
 
   return (
     <div>
@@ -41,7 +41,7 @@ export default function AdminUsersPage() {
               </div>
               <div>
                 <p className="text-sm font-medium text-zinc-200">{p.displayName || p.email}</p>
-                <p className="text-[11px] text-zinc-500">{p.email}</p>
+                <p className="text-[11px] text-muted-foreground">{p.email}</p>
               </div>
             </div>
             <div className="flex items-center gap-2">

@@ -47,7 +47,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
 
       <aside
         className={cn(
-          "fixed top-0 left-0 z-50 h-full w-60 bg-[#111113] border-r border-zinc-800 flex flex-col transition-transform duration-200 lg:translate-x-0",
+          "fixed top-0 left-0 z-50 h-full w-60 bg-sidebar border-r border-zinc-800 flex flex-col transition-transform duration-200 lg:translate-x-0",
           isOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
@@ -55,7 +55,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
           <Shield className="size-5 text-[#c8a54e]" />
           <span className="font-semibold text-sm tracking-wider">
             <span className="text-[#c8a54e]">AURUM</span>
-            <span className="text-zinc-500 ml-1">VPN</span>
+            <span className="text-muted-foreground ml-1">VPN</span>
           </span>
         </div>
 

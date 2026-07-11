@@ -37,13 +37,13 @@ export default function ForgotPasswordPage() {
 
   if (sent) {
     return (
-      <div className="min-h-screen bg-[#09090b] flex items-center justify-center p-4">
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <div className="w-full max-w-sm text-center">
           <div className="inline-flex items-center justify-center h-12 w-12 rounded-xl bg-emerald-500/10 mb-4">
             <CheckCircle className="h-6 w-6 text-emerald-500" />
           </div>
           <h1 className="text-lg font-semibold text-zinc-100 mb-2">Check your email</h1>
-          <p className="text-sm text-zinc-500 mb-6">
+          <p className="text-sm text-muted-foreground mb-6">
             We&apos;ve sent a password reset link to <strong className="text-zinc-300">{email}</strong>
           </p>
           <Link
@@ -59,9 +59,9 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#09090b] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-sm">
-        <Link href="/login" className="inline-flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-300 mb-6">
+        <Link href="/login" className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-zinc-300 mb-6">
           <ArrowLeft className="h-3.5 w-3.5" />
           Back to login
         </Link>
@@ -71,7 +71,7 @@ export default function ForgotPasswordPage() {
             <Shield className="h-6 w-6 text-[#c8a54e]" />
           </div>
           <h1 className="text-lg font-semibold text-zinc-100">Reset password</h1>
-          <p className="text-sm text-zinc-500 mt-1">
+          <p className="text-sm text-muted-foreground mt-1">
             Enter your email and we&apos;ll send you a reset link
           </p>
         </div>

@@ -40,7 +40,7 @@ export default function AccountPage() {
     router.refresh();
   };
 
-  if (loading) return <div className="flex items-center justify-center h-64"><Loader2 className="h-6 w-6 animate-spin text-zinc-500" /></div>;
+  if (loading) return <div className="flex items-center justify-center h-64"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>;
 
   return (
     <div className="max-w-lg mx-auto space-y-6">
@@ -51,17 +51,17 @@ export default function AccountPage() {
 
       <div className="space-y-4">
         <div className="p-4 rounded-lg bg-zinc-900/50 border border-zinc-800">
-          <label className="text-[11px] font-medium text-zinc-500 uppercase tracking-wider">Email</label>
+          <label className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Email</label>
           <div className="flex items-center gap-2 mt-1">
-            <Mail className="h-4 w-4 text-zinc-500" />
+            <Mail className="h-4 w-4 text-muted-foreground" />
             <span className="text-sm text-zinc-200">{email}</span>
           </div>
         </div>
 
         <div className="p-4 rounded-lg bg-zinc-900/50 border border-zinc-800">
-          <label className="text-[11px] font-medium text-zinc-500 uppercase tracking-wider">Plan</label>
+          <label className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Plan</label>
           <div className="flex items-center gap-2 mt-1">
-            <Crown className={`h-4 w-4 ${plan?.slug === "free" ? "text-zinc-500" : "text-[#c8a54e]"}`} />
+            <Crown className={`h-4 w-4 ${plan?.slug === "free" ? "text-muted-foreground" : "text-[#c8a54e]"}`} />
             <span className="text-sm text-zinc-200 capitalize">{plan?.name || "Free"}</span>
             {plan?.slug === "free" && (
               <button onClick={() => router.push("/pricing")} className="ml-auto text-xs text-[#c8a54e] hover:text-[#d4b85e] font-medium">
@@ -72,7 +72,7 @@ export default function AccountPage() {
         </div>
 
         <div className="p-4 rounded-lg bg-zinc-900/50 border border-zinc-800">
-          <label className="text-[11px] font-medium text-zinc-500 uppercase tracking-wider">Quick Actions</label>
+          <label className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Quick Actions</label>
           <div className="mt-2 space-y-1">
             <button onClick={() => router.push("/app/billing")} className="flex items-center gap-2 w-full px-3 py-2 rounded-md hover:bg-zinc-800 text-sm text-zinc-300 transition-colors">
               <CreditCard className="h-4 w-4" />

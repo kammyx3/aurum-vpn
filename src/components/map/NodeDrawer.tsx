@@ -62,13 +62,13 @@ export default function NodeDrawer({
   const loadColor = node.loadPercent > 80 ? "text-red-500" : node.loadPercent > 60 ? "text-yellow-500" : "text-emerald-500";
 
   return (
-    <div className="fixed inset-y-0 right-0 z-50 w-full max-w-md bg-[#111113] border-l border-zinc-800 shadow-2xl overflow-y-auto">
-      <div className="sticky top-0 bg-[#111113] border-b border-zinc-800 px-5 py-4 flex items-center justify-between">
+    <div className="fixed inset-y-0 right-0 z-50 w-full max-w-md bg-card border-l border-zinc-800 shadow-2xl overflow-y-auto">
+      <div className="sticky top-0 bg-card border-b border-zinc-800 px-5 py-4 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Shield className="h-5 w-5 text-[#c8a54e]" />
           <span className="text-sm font-semibold text-zinc-100">{node.name}</span>
         </div>
-        <button onClick={onClose} className="p-1 rounded-md text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800">
+        <button onClick={onClose} className="p-1 rounded-md text-muted-foreground hover:text-zinc-300 hover:bg-zinc-800">
           <X className="h-4 w-4" />
         </button>
       </div>
@@ -77,10 +77,10 @@ export default function NodeDrawer({
         <div className="flex items-start justify-between">
           <div>
             <h2 className="text-lg font-bold text-zinc-100">{node.city}</h2>
-            <p className="text-sm text-zinc-500">{node.country} &middot; {node.countryCode}</p>
-            <p className="text-xs text-zinc-600">{node.region}</p>
+            <p className="text-sm text-muted-foreground">{node.country} &middot; {node.countryCode}</p>
+            <p className="text-xs text-muted-foreground">{node.region}</p>
           </div>
-          <button onClick={() => setFavorite(!favorite)} className={`p-1.5 rounded-md transition-colors ${favorite ? "text-[#c8a54e]" : "text-zinc-600 hover:text-zinc-400"}`}>
+          <button onClick={() => setFavorite(!favorite)} className={`p-1.5 rounded-md transition-colors ${favorite ? "text-[#c8a54e]" : "text-muted-foreground hover:text-zinc-400"}`}>
             <Star className="h-4 w-4" fill={favorite ? "currentColor" : "none"} />
           </button>
         </div>
@@ -113,7 +113,7 @@ export default function NodeDrawer({
                 <Lock className="h-4 w-4 text-[#c8a54e]" />
                 <div>
                   <p className="text-xs font-medium text-zinc-200">Upgrade required</p>
-                  <p className="text-[11px] text-zinc-500">
+                  <p className="text-[11px] text-muted-foreground">
                     This node requires the <strong className="text-[#c8a54e]">{tierLabels[node.requiredPlanSlug] || node.requiredPlanSlug}</strong> plan
                   </p>
                 </div>
@@ -145,7 +145,7 @@ export default function NodeDrawer({
           )}
         </div>
 
-        <div className="border-t border-zinc-800 pt-4 space-y-2 text-xs text-zinc-500">
+        <div className="border-t border-zinc-800 pt-4 space-y-2 text-xs text-muted-foreground">
           <div className="flex justify-between">
             <span>Current users</span>
             <span className="text-zinc-300">{node.currentUsers} / {node.maxUsers}</span>

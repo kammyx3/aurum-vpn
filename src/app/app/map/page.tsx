@@ -109,7 +109,7 @@ export default function MapPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full">
-        <Loader2 className="h-6 w-6 animate-spin text-zinc-500" />
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
       </div>
     );
   }
@@ -126,14 +126,14 @@ export default function MapPage() {
         <div className="flex items-center gap-2 bg-zinc-800/50 rounded-lg p-0.5">
           <button
             onClick={() => setView("map")}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${view === "map" ? "bg-zinc-700 text-zinc-100" : "text-zinc-500 hover:text-zinc-300"}`}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${view === "map" ? "bg-zinc-700 text-zinc-100" : "text-muted-foreground hover:text-zinc-300"}`}
           >
             <MapIcon className="h-3.5 w-3.5" />
             Map
           </button>
           <button
             onClick={() => setView("list")}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${view === "list" ? "bg-zinc-700 text-zinc-100" : "text-zinc-500 hover:text-zinc-300"}`}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${view === "list" ? "bg-zinc-700 text-zinc-100" : "text-muted-foreground hover:text-zinc-300"}`}
           >
             <List className="h-3.5 w-3.5" />
             List
@@ -164,12 +164,12 @@ export default function MapPage() {
                   <div className={`h-2 w-2 rounded-full ${locked ? "bg-zinc-600" : node.status === "online" ? "bg-emerald-500" : node.status === "high_load" ? "bg-yellow-500" : "bg-zinc-600"}`} />
                   <div>
                     <p className="text-sm font-medium text-zinc-200">{node.city}</p>
-                    <p className="text-[11px] text-zinc-500">{node.country} &middot; {node.name}</p>
+                    <p className="text-[11px] text-muted-foreground">{node.country} &middot; {node.name}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-[11px] text-zinc-500">{node.loadPercent}%</span>
-                  {locked && <span className="text-[10px] px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-500">Locked</span>}
+                  <span className="text-[11px] text-muted-foreground">{node.loadPercent}%</span>
+                  {locked && <span className="text-[10px] px-1.5 py-0.5 rounded bg-zinc-800 text-muted-foreground">Locked</span>}
                 </div>
               </button>
             );

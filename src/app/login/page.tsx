@@ -48,7 +48,7 @@ function LoginForm() {
         <div className="relative">
           <input type={showPassword ? "text" : "password"} value={password} onChange={(e) => { setPassword(e.target.value); setError(""); }} placeholder="Enter your password" required
             className="w-full px-3 py-2 pr-9 rounded-lg bg-zinc-800/50 border border-zinc-700 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-[#c8a54e]/50 transition-colors" />
-          <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300">
+          <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-zinc-300">
             {showPassword ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
           </button>
         </div>
@@ -68,20 +68,20 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen bg-[#09090b] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center h-12 w-12 rounded-xl bg-[#c8a54e]/10 mb-4">
             <Shield className="h-6 w-6 text-[#c8a54e]" />
           </div>
           <h1 className="text-lg font-semibold text-zinc-100">Welcome back</h1>
-          <p className="text-sm text-zinc-500 mt-1">Sign in to your AURUM VPN account</p>
+          <p className="text-sm text-muted-foreground mt-1">Sign in to your AURUM VPN account</p>
         </div>
-        <Suspense fallback={<div className="flex justify-center py-8"><Loader2 className="h-5 w-5 animate-spin text-zinc-500" /></div>}>
+        <Suspense fallback={<div className="flex justify-center py-8"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>}>
           <LoginForm />
         </Suspense>
         <div className="mt-6 text-center">
-          <p className="text-xs text-zinc-500">
+          <p className="text-xs text-muted-foreground">
             Don&apos;t have an account?{" "}
             <Link href="/signup" className="text-[#c8a54e] hover:text-[#d4b85e] font-medium">
               Create one <ArrowRight className="inline h-3 w-3" />
