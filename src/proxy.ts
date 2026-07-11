@@ -17,7 +17,7 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  if (pathname.startsWith("/app") || pathname.startsWith("/admin") || (isApi && !isAuthApi)) {
+  if (pathname.startsWith("/admin") || (isApi && !isAuthApi)) {
     const response = NextResponse.next();
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,

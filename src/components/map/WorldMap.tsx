@@ -154,7 +154,7 @@ export default function WorldMap({
       className="h-full w-full rounded-lg"
       zoomControl={true}
       scrollWheelZoom={true}
-      style={{ background: "#09090b" }}
+      style={{ background: "var(--background)" }}
     >
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
