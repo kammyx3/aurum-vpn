@@ -7,11 +7,69 @@ const https = require("https");
 const isDev = !app.isPackaged;
 const PORT = 3000;
 const PRODUCTION_URL = "https://aurum-vpn-aurum10.vercel.app";
+const UPDATE_API_URL = isDev
+  ? "http://localhost:3000/api/app-update"
+  : `${PRODUCTION_URL}/api/app-update`;
+
 let mainWindow = null;
+let splashWindow = null;
 let tray = null;
 let isQuitting = false;
+let updateFilePath = null;
 
-function createWindow() {
+// ─── Splash Screen ───
+
+function createSplashWindow() {
+  splashWindow = new BrowserWindow({
+    width: 420,
+    height: 460,
+    frame: false,
+    resizable: false,
+    transparent: false,
+    backgroundColor: "#0a0a0f",
+    show: false,
+    webPreferences: {
+      preload: path.join(__dirname, "preload.js"),
+      contextIsolation: true,
+      nodeIntegration: false,
+      sandbox: false,
+    },
+    icon: path.join(__dirname, "..", "public", "icons", process.platform === "win32" ? "icon.ico" : "icon.png"),
+  });
+
+  splashWindow.loadFile(path.join(__dirname, "splash.html"));
+
+  splashWindow.once("ready-to-show", () => {
+    splashWindow.show();
+  });
+}
+
+function sendSplashStatus(msg) {
+  splashWindow?.webContents.send("splash-status", msg);
+}
+
+function sendSplashProgress(pct) {
+  splashWindow?.webContents.send("splash-progress", pct);
+}
+
+function sendSplashError(title, desc) {
+  splashWindow?.webContents.send("splash-error", title, desc);
+}
+
+function sendSplashDone() {
+  splashWindow?.webContents.send("splash-done");
+}
+
+function closeSplash() {
+  if (splashWindow && !splashWindow.isDestroyed()) {
+    splashWindow.close();
+    splashWindow = null;
+  }
+}
+
+// ─── Main Window ───
+
+function createMainWindow() {
   mainWindow = new BrowserWindow({
     width: 1280,
     height: 800,
@@ -20,6 +78,7 @@ function createWindow() {
     frame: false,
     titleBarStyle: "hidden",
     backgroundColor: "#09090b",
+    show: false,
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
       contextIsolation: true,
@@ -27,96 +86,44 @@ function createWindow() {
       sandbox: false,
     },
     icon: path.join(__dirname, "..", "public", "icons", process.platform === "win32" ? "icon.ico" : "icon.png"),
-    show: false,
   });
 
   const url = isDev ? `http://localhost:${PORT}/login` : `${PRODUCTION_URL}/login`;
-
   mainWindow.loadURL(url);
 
   mainWindow.once("ready-to-show", () => {
     mainWindow.show();
+    closeSplash();
   });
 
-  mainWindow.on("maximize", () => {
-    mainWindow?.webContents.send("window-maximize-change", true);
-  });
-
-  mainWindow.on("unmaximize", () => {
-    mainWindow?.webContents.send("window-maximize-change", false);
-  });
+  mainWindow.on("maximize", () => mainWindow?.webContents.send("window-maximize-change", true));
+  mainWindow.on("unmaximize", () => mainWindow?.webContents.send("window-maximize-change", false));
 
   mainWindow.on("close", (e) => {
-    if (!isQuitting) {
-      e.preventDefault();
-      mainWindow.hide();
-      return false;
-    }
+    if (!isQuitting) { e.preventDefault(); mainWindow.hide(); return false; }
   });
 
-  mainWindow.on("closed", () => {
-    mainWindow = null;
-  });
+  mainWindow.on("closed", () => { mainWindow = null; });
 }
 
+// ─── Tray ───
+
 function createTray() {
-  const iconSize = 16;
   const icon = nativeImage.createEmpty();
   tray = new Tray(icon);
-
   const contextMenu = Menu.buildFromTemplate([
-    {
-      label: "AURUM VPN",
-      enabled: false,
-    },
+    { label: "AURUM VPN", enabled: false },
     { type: "separator" },
-    {
-      label: "Show Dashboard",
-      click: () => {
-        if (mainWindow) {
-          mainWindow.show();
-          mainWindow.focus();
-        }
-      },
-    },
+    { label: "Show Dashboard", click: () => { if (mainWindow) { mainWindow.show(); mainWindow.focus(); } } },
     { type: "separator" },
-    {
-      label: "Connect VPN",
-      click: () => {
-        if (mainWindow) {
-          mainWindow.show();
-          mainWindow.webContents.send("vpn-connect");
-        }
-      },
-    },
-    {
-      label: "Disconnect VPN",
-      click: () => {
-        if (mainWindow) {
-          mainWindow.show();
-          mainWindow.webContents.send("vpn-disconnect");
-        }
-      },
-    },
+    { label: "Connect VPN", click: () => { if (mainWindow) { mainWindow.show(); mainWindow.webContents.send("vpn-connect"); } } },
+    { label: "Disconnect VPN", click: () => { if (mainWindow) { mainWindow.show(); mainWindow.webContents.send("vpn-disconnect"); } } },
     { type: "separator" },
-    {
-      label: "Quit",
-      click: () => {
-        isQuitting = true;
-        app.quit();
-      },
-    },
+    { label: "Quit", click: () => { isQuitting = true; app.quit(); } },
   ]);
-
   tray.setToolTip("AURUM VPN");
   tray.setContextMenu(contextMenu);
-
-  tray.on("double-click", () => {
-    if (mainWindow) {
-      mainWindow.show();
-      mainWindow.focus();
-    }
-  });
+  tray.on("double-click", () => { if (mainWindow) { mainWindow.show(); mainWindow.focus(); } });
 }
 
 // ─── IPC Handlers ─── Window Controls ───
@@ -127,14 +134,18 @@ ipcMain.on("window-maximize", () => {
   else mainWindow?.maximize();
 });
 ipcMain.on("window-close", () => mainWindow?.close());
-
 ipcMain.handle("window-is-maximized", () => mainWindow?.isMaximized() ?? false);
 
-// ─── Custom Auto-Updater (checks via Vercel API, downloads from GitHub CDN) ───
+// ─── Splash IPC ───
 
-const UPDATE_API_URL = isDev
-  ? "http://localhost:3000/api/app-update"
-  : "https://aurum-vpn.vercel.app/api/app-update";
+ipcMain.on("splash-retry", () => { runStartupSequence(); });
+ipcMain.on("splash-continue", () => {
+  sendSplashDone();
+  createMainWindow();
+  if (tray) createTray();
+});
+
+// ─── Updater ───
 
 function isNewerVersion(latest, current) {
   const l = latest.split(".").map(Number);
@@ -185,33 +196,80 @@ function downloadFile(urlStr, destPath, onProgress) {
   });
 }
 
-let updateFilePath = null;
+async function checkForUpdate() {
+  sendSplashStatus("Checking for updates...");
+  const response = await httpsGet(UPDATE_API_URL);
+  const data = JSON.parse(response);
+  if (!data.version) return null;
+  const current = app.getVersion();
+  if (!isNewerVersion(data.version, current)) return null;
+  return data;
+}
+
+async function runStartupSequence() {
+  try {
+    sendSplashStatus("Checking for updates...");
+    const updateData = await checkForUpdate();
+
+    if (updateData) {
+      sendSplashStatus(`Update available: v${updateData.version}`);
+      const fileInfo = updateData.files[0];
+      const cacheDir = path.join(app.getPath("userData"), "update-cache");
+      fs.mkdirSync(cacheDir, { recursive: true });
+      updateFilePath = path.join(cacheDir, fileInfo.url.split("/").pop());
+
+      let lastPct = -1;
+      await downloadFile(fileInfo.url, updateFilePath, (transferred, total) => {
+        const pct = Math.round((transferred / total) * 100);
+        if (pct !== lastPct) { lastPct = pct; sendSplashProgress(pct); }
+      });
+
+      sendSplashStatus("Update ready. Launching...");
+      await new Promise((r) => setTimeout(r, 500));
+    } else {
+      sendSplashStatus("You're up to date!");
+      await new Promise((r) => setTimeout(r, 800));
+    }
+
+    sendSplashDone();
+    createMainWindow();
+    if (tray) createTray();
+  } catch (err) {
+    console.error("[startup] Error:", err.message);
+    if (err.message.includes("ENOTFOUND") || err.message.includes("EAI_AGAIN") || err.message.includes("getaddrinfo")) {
+      sendSplashError("Can't connect to network", "Check your internet connection and try again.");
+    } else {
+      sendSplashError("Update check failed", err.message);
+    }
+  }
+}
+
+// ─── Manual Updater IPC (from renderer) ───
+
+ipcMain.on("updater:check", () => customCheckForUpdates());
+ipcMain.on("updater:download", () => customDownloadUpdate());
+ipcMain.on("updater:install", () => customInstallUpdate());
+
+ipcMain.on("renderer:ready", () => {
+  customCheckForUpdates();
+});
 
 async function customCheckForUpdates() {
-  console.log("[updater] Checking:", UPDATE_API_URL);
   try {
-    const response = await httpsGet(UPDATE_API_URL);
-    const data = JSON.parse(response);
-    if (!data.version) { console.log("[updater] No releases found"); return; }
-    const current = app.getVersion();
-    if (isNewerVersion(data.version, current)) {
-      console.log("[updater] Update available:", data.version);
+    const data = await checkForUpdate();
+    if (data) {
       mainWindow?.webContents.send("updater:update-available", { version: data.version, releaseDate: data.releaseDate });
-    } else {
-      console.log("[updater] No update:", current, "vs", data.version);
     }
   } catch (err) {
-    console.error("[updater] Check failed:", err.message);
     mainWindow?.webContents.send("updater:error", err.message);
   }
 }
 
 async function customDownloadUpdate() {
-  console.log("[updater] Downloading...");
   try {
     const response = await httpsGet(UPDATE_API_URL);
     const data = JSON.parse(response);
-    if (!data.files || !data.files[0]) { throw new Error("No download URL available"); }
+    if (!data.files || !data.files[0]) throw new Error("No download URL");
     const fileInfo = data.files[0];
     const cacheDir = path.join(app.getPath("userData"), "update-cache");
     fs.mkdirSync(cacheDir, { recursive: true });
@@ -224,28 +282,17 @@ async function customDownloadUpdate() {
     });
     mainWindow?.webContents.send("updater:update-downloaded", { version: data.version });
   } catch (err) {
-    console.error("[updater] Download failed:", err.message);
     mainWindow?.webContents.send("updater:error", err.message);
   }
 }
 
 function customInstallUpdate() {
-  if (!updateFilePath) { mainWindow?.webContents.send("updater:error", "No update downloaded yet"); return; }
-  console.log("[updater] Installing:", updateFilePath);
+  if (!updateFilePath) { mainWindow?.webContents.send("updater:error", "No update downloaded"); return; }
   spawn(updateFilePath, ["--updated"], { detached: true, stdio: "ignore" }).unref();
   app.quit();
 }
 
-ipcMain.on("updater:check", () => customCheckForUpdates());
-ipcMain.on("updater:download", () => customDownloadUpdate());
-ipcMain.on("updater:install", () => customInstallUpdate());
-
-ipcMain.on("renderer:ready", () => {
-  console.log("[updater] renderer ready, checking...");
-  customCheckForUpdates();
-});
-
-// ─── IPC Handlers ─── WireGuard System Integration ───
+// ─── WireGuard IPC Handlers ───
 
 function runCommand(cmd) {
   return new Promise((resolve, reject) => {
@@ -256,202 +303,74 @@ function runCommand(cmd) {
   });
 }
 
-function isWindows() {
-  return process.platform === "win32";
-}
+function isWindows() { return process.platform === "win32"; }
 
-function isLinux() {
-  return process.platform === "linux";
-}
-
-ipcMain.handle("wg:install-check", async () => {
+ipcMain.handle("wg:installCheck", async () => {
   try {
     if (isWindows()) {
-      await runCommand('where wg');
-      return { installed: true, platform: "windows" };
+      const out = await runCommand("where wg 2>nul || echo notfound");
+      return { installed: out.trim() !== "notfound", platform: "win32" };
     }
-    if (isLinux()) {
-      await runCommand("which wg");
-      return { installed: true, platform: "linux" };
-    }
-    if (process.platform === "darwin") {
-      await runCommand("which wg");
-      return { installed: true, platform: "macos" };
-    }
-    return { installed: false, platform: process.platform };
-  } catch {
-    return { installed: false, platform: process.platform };
-  }
+    const out = await runCommand("which wg 2>/dev/null || echo notfound");
+    return { installed: out.trim() !== "notfound", platform: process.platform };
+  } catch { return { installed: false, platform: process.platform }; }
 });
 
 ipcMain.handle("wg:genkey", async () => {
-  try {
-    const key = await runCommand("wg genkey");
-    return { success: true, key };
-  } catch (e) {
-    return { success: false, error: e.message };
-  }
+  try { const key = await runCommand("wg genkey"); return { success: true, key: key.trim() }; }
+  catch (e) { return { success: false, error: e.message }; }
 });
 
-ipcMain.handle("wg:pubkey", async (_event, privateKey) => {
-  try {
-    const pub = await runCommand(`echo "${privateKey}" | wg pubkey`);
-    return { success: true, key: pub };
-  } catch (e) {
-    return { success: false, error: e.message };
-  }
+ipcMain.handle("wg:pubkey", async (_, pk) => {
+  try { const key = await runCommand(`echo ${pk.trim()} | wg pubkey`); return { success: true, key: key.trim() }; }
+  catch (e) { return { success: false, error: e.message }; }
 });
 
 ipcMain.handle("wg:genpsk", async () => {
+  try { const key = await runCommand("wg genpsk"); return { success: true, key: key.trim() }; }
+  catch (e) { return { success: false, error: e.message }; }
+});
+
+ipcMain.handle("wg:show", async (_, iface) => {
+  try { const out = await runCommand(`wg show ${iface}`); return { success: true, output: out }; }
+  catch (e) { return { success: false, error: e.message }; }
+});
+
+ipcMain.handle("wg:addPeer", async (_, iface, pk, ips) => {
+  try { await runCommand(`wg set ${iface} peer ${pk} allowed-ips ${ips}`); return { success: true }; }
+  catch (e) { return { success: false, error: e.message }; }
+});
+
+ipcMain.handle("wg:removePeer", async (_, iface, pk) => {
+  try { await runCommand(`wg set ${iface} peer ${pk} remove`); return { success: true }; }
+  catch (e) { return { success: false, error: e.message }; }
+});
+
+ipcMain.handle("wg:status", async (_, iface) => {
   try {
-    const key = await runCommand("wg genpsk");
-    return { success: true, key };
-  } catch (e) {
-    return { success: false, error: e.message };
-  }
+    const raw = await runCommand(`wg show ${iface}`);
+    const lines = raw.split("\n");
+    const peerCount = lines.filter((l) => l.trim().startsWith("peer:")).length;
+    return { success: true, status: { interfaceName: iface, listening: raw.includes("listening port"), peerCount, raw } };
+  } catch (e) { return { success: false, error: e.message }; }
 });
 
-ipcMain.handle("wg:show", async (_event, interfaceName) => {
-  try {
-    const output = await runCommand(`wg show ${interfaceName || "wg0"}`);
-    return { success: true, output };
-  } catch (e) {
-    return { success: false, error: e.message };
-  }
-});
-
-ipcMain.handle("wg:add-peer", async (_event, interfaceName, publicKey, allowedIPs) => {
-  try {
-    await runCommand(`wg set ${interfaceName} peer ${publicKey} allowed-ips ${allowedIPs}`);
-    return { success: true };
-  } catch (e) {
-    return { success: false, error: e.message };
-  }
-});
-
-ipcMain.handle("wg:remove-peer", async (_event, interfaceName, publicKey) => {
-  try {
-    await runCommand(`wg set ${interfaceName} peer ${publicKey} remove`);
-    return { success: true };
-  } catch (e) {
-    return { success: false, error: e.message };
-  }
-});
-
-ipcMain.handle("wg:bring-up", async (_event, interfaceName) => {
-  try {
-    if (isWindows()) {
-      await runCommand(`wireguard /installtunnelservice "${interfaceName}"`);
-    } else {
-      await runCommand(`sudo wg-quick up ${interfaceName}`);
-    }
-    return { success: true };
-  } catch (e) {
-    return { success: false, error: e.message };
-  }
-});
-
-ipcMain.handle("wg:bring-down", async (_event, interfaceName) => {
-  try {
-    if (isWindows()) {
-      await runCommand(`wireguard /uninstalltunnelservice ${interfaceName}`);
-    } else {
-      await runCommand(`sudo wg-quick down ${interfaceName}`);
-    }
-    return { success: true };
-  } catch (e) {
-    return { success: false, error: e.message };
-  }
-});
-
-ipcMain.handle("wg:status", async (_event, interfaceName) => {
-  try {
-    const name = interfaceName || "wg0";
-    const output = await runCommand(`wg show ${name}`);
-    const lines = output.split("\n");
-    const peers = lines.filter((l) => l.startsWith("peer:")).length;
-    const listening = !lines.some((l) => l.includes("Unable to access interface"));
-    return {
-      success: true,
-      status: {
-        interfaceName: name,
-        listening,
-        peerCount: peers,
-        raw: output,
-      },
-    };
-  } catch {
-    return {
-      success: true,
-      status: {
-        interfaceName: interfaceName || "wg0",
-        listening: false,
-        peerCount: 0,
-        raw: "",
-      },
-    };
-  }
-});
-
-ipcMain.handle("wg:write-config", async (_event, interfaceName, configContent) => {
-  try {
-    const configDir = isWindows()
-      ? path.join(process.env.ALLUSERSPROFILE || "C:\\ProgramData", "WireGuard")
-      : "/etc/wireguard";
-    const configPath = path.join(configDir, `${interfaceName}.conf`);
-    fs.writeFileSync(configPath, configContent, "utf-8");
-    return { success: true, path: configPath };
-  } catch (e) {
-    return { success: false, error: e.message };
-  }
-});
-
-// ─── IPC Handlers ─── System Info ───
-
-ipcMain.handle("sys:platform", () => process.platform);
-ipcMain.handle("sys:hostname", () => require("os").hostname());
-ipcMain.handle("sys:open-external", async (_event, url) => {
-  await shell.openExternal(url);
-});
-
-ipcMain.handle("sys:open-file-dialog", async () => {
-  const result = await dialog.showOpenDialog(mainWindow, {
-    properties: ["openFile"],
-    filters: [{ name: "WireGuard Config", extensions: ["conf"] }],
-  });
-  if (result.canceled) return null;
-  return result.filePaths[0];
-});
-
-ipcMain.handle("sys:read-file", async (_event, filePath) => {
-  try {
-    return { success: true, content: fs.readFileSync(filePath, "utf-8") };
-  } catch (e) {
-    return { success: false, error: e.message };
-  }
-});
+ipcMain.handle("platform", () => process.platform);
+ipcMain.handle("hostname", () => require("os").hostname());
 
 // ─── App Lifecycle ───
 
 app.whenReady().then(() => {
-  createWindow();
-  createTray();
-
-  if (!isDev) {
-    console.log("[updater] scheduled check at startup");
-    setTimeout(() => customCheckForUpdates(), 5000);
-  }
-
-  app.on("activate", () => {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow();
-    else mainWindow?.show();
-  });
+  createSplashWindow();
+  setTimeout(runStartupSequence, 400);
 });
 
 app.on("window-all-closed", () => {
-  if (process.platform !== "darwin") app.quit();
+  if (process.platform !== "darwin" && !isQuitting) app.quit();
 });
 
-app.on("before-quit", () => {
-  isQuitting = true;
+app.on("activate", () => {
+  if (mainWindow) { mainWindow.show(); } else { createMainWindow(); }
 });
+
+app.on("before-quit", () => { isQuitting = true; });

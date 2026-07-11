@@ -66,10 +66,10 @@ export default function PricingPage() {
     }
   };
 
-  if (loading) return <div className="min-h-screen bg-background flex items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>;
+  if (loading) return <div className="h-full bg-background flex items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>;
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="h-full bg-background text-foreground">
       <div className="max-w-5xl mx-auto px-6 py-16">
         <div className="text-center mb-10">
           <div className="inline-flex items-center justify-center h-12 w-12 rounded-xl bg-[#c8a54e]/10 mb-4">

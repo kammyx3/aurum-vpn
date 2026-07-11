@@ -37,7 +37,7 @@ export default function ForgotPasswordPage() {
 
   if (sent) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <div className="h-full bg-background flex items-center justify-center p-4">
         <div className="w-full max-w-sm text-center">
           <div className="inline-flex items-center justify-center h-12 w-12 rounded-xl bg-emerald-500/10 mb-4">
             <CheckCircle className="h-6 w-6 text-emerald-500" />
@@ -59,7 +59,7 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+    <div className="h-full bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-sm">
         <Link href="/login" className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground mb-6">
           <ArrowLeft className="h-3.5 w-3.5" />
