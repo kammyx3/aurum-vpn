@@ -6,7 +6,7 @@ import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
 import { useAppStore } from "@/stores/appStore";
 import { ToastProvider } from "@/components/ui/toast";
-import { createClient, apiFetch } from "@/lib/supabase/client";
+import { createClient, apiFetch, getSavedSession } from "@/lib/supabase/client";
 import { Loader2 } from "lucide-react";
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
@@ -16,20 +16,10 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const supabase = createClient();
-    const STORAGE_KEY = "svpn-auth";
-
-    function getLocalSession() {
-      try {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if (!raw) return null;
-        const p = JSON.parse(raw);
-        return p?.access_token ? p : null;
-      } catch { return null; }
-    }
 
     async function check() {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session && !getLocalSession()) {
+      if (!session && !getSavedSession()) {
         router.replace("/login");
         return;
       }
