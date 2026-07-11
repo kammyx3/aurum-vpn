@@ -62,11 +62,11 @@ export default function NodeDrawer({
   const loadColor = node.loadPercent > 80 ? "text-red-500" : node.loadPercent > 60 ? "text-yellow-500" : "text-emerald-500";
 
   return (
-    <div className="fixed inset-y-0 right-0 z-50 w-full max-w-md bg-card border-l border-zinc-800 shadow-2xl overflow-y-auto">
-      <div className="sticky top-0 bg-card border-b border-zinc-800 px-5 py-4 flex items-center justify-between">
+    <div className="fixed inset-y-0 right-0 z-50 w-full max-w-md bg-card border-l border-border shadow-2xl overflow-y-auto">
+      <div className="sticky top-0 bg-card border-b border-border px-5 py-4 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Shield className="h-5 w-5 text-[#c8a54e]" />
-          <span className="text-sm font-semibold text-zinc-100">{node.name}</span>
+          <span className="text-sm font-semibold text-foreground">{node.name}</span>
         </div>
         <button onClick={onClose} className="p-1 rounded-md text-muted-foreground hover:text-zinc-300 hover:bg-zinc-800">
           <X className="h-4 w-4" />
@@ -76,7 +76,7 @@ export default function NodeDrawer({
       <div className="p-5 space-y-5">
         <div className="flex items-start justify-between">
           <div>
-            <h2 className="text-lg font-bold text-zinc-100">{node.city}</h2>
+            <h2 className="text-lg font-bold text-foreground">{node.city}</h2>
             <p className="text-sm text-muted-foreground">{node.country} &middot; {node.countryCode}</p>
             <p className="text-xs text-muted-foreground">{node.region}</p>
           </div>
@@ -106,13 +106,13 @@ export default function NodeDrawer({
           ))}
         </div>
 
-        <div className="border-t border-zinc-800 pt-4 space-y-3">
+        <div className="border-t border-border pt-4 space-y-3">
           {isLocked ? (
             <div className="space-y-3">
-              <div className="flex items-center gap-2 p-3 rounded-lg bg-zinc-800/50 border border-zinc-700">
+              <div className="flex items-center gap-2 p-3 rounded-lg bg-muted border border-border">
                 <Lock className="h-4 w-4 text-[#c8a54e]" />
                 <div>
-                  <p className="text-xs font-medium text-zinc-200">Upgrade required</p>
+                  <p className="text-xs font-medium text-foreground">Upgrade required</p>
                   <p className="text-[11px] text-muted-foreground">
                     This node requires the <strong className="text-[#c8a54e]">{tierLabels[node.requiredPlanSlug] || node.requiredPlanSlug}</strong> plan
                   </p>
@@ -145,7 +145,7 @@ export default function NodeDrawer({
           )}
         </div>
 
-        <div className="border-t border-zinc-800 pt-4 space-y-2 text-xs text-muted-foreground">
+        <div className="border-t border-border pt-4 space-y-2 text-xs text-muted-foreground">
           <div className="flex justify-between">
             <span>Current users</span>
             <span className="text-zinc-300">{node.currentUsers} / {node.maxUsers}</span>

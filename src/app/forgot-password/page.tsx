@@ -42,9 +42,9 @@ export default function ForgotPasswordPage() {
           <div className="inline-flex items-center justify-center h-12 w-12 rounded-xl bg-emerald-500/10 mb-4">
             <CheckCircle className="h-6 w-6 text-emerald-500" />
           </div>
-          <h1 className="text-lg font-semibold text-zinc-100 mb-2">Check your email</h1>
+          <h1 className="text-lg font-semibold text-foreground mb-2">Check your email</h1>
           <p className="text-sm text-muted-foreground mb-6">
-            We&apos;ve sent a password reset link to <strong className="text-zinc-300">{email}</strong>
+            We&apos;ve sent a password reset link to <strong className="text-foreground">{email}</strong>
           </p>
           <Link
             href="/login"
@@ -61,7 +61,7 @@ export default function ForgotPasswordPage() {
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-sm">
-        <Link href="/login" className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-zinc-300 mb-6">
+        <Link href="/login" className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground mb-6">
           <ArrowLeft className="h-3.5 w-3.5" />
           Back to login
         </Link>
@@ -70,7 +70,7 @@ export default function ForgotPasswordPage() {
           <div className="inline-flex items-center justify-center h-12 w-12 rounded-xl bg-[#c8a54e]/10 mb-4">
             <Shield className="h-6 w-6 text-[#c8a54e]" />
           </div>
-          <h1 className="text-lg font-semibold text-zinc-100">Reset password</h1>
+          <h1 className="text-lg font-semibold text-foreground">Reset password</h1>
           <p className="text-sm text-muted-foreground mt-1">
             Enter your email and we&apos;ll send you a reset link
           </p>
@@ -78,14 +78,14 @@ export default function ForgotPasswordPage() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-1.5">
-            <label className="text-xs font-medium text-zinc-300">Email</label>
+            <label className="text-xs font-medium text-foreground">Email</label>
             <input
               type="email"
               value={email}
               onChange={(e) => { setEmail(e.target.value); setError(""); }}
               placeholder="you@example.com"
               required
-              className="w-full px-3 py-2 rounded-lg bg-zinc-800/50 border border-zinc-700 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-[#c8a54e]/50 transition-colors"
+              className="w-full px-3 py-2 rounded-lg bg-muted border border-border text-sm text-foreground placeholder-zinc-500 focus:outline-none focus:border-[#c8a54e]/50 transition-colors"
             />
           </div>
 

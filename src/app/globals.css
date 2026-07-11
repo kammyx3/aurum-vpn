@@ -24,9 +24,9 @@
 
 :root {
   --background: #fafafa;
-  --foreground: #0a0a0a;
+  --foreground: #18181b;
   --card: #ffffff;
-  --card-foreground: #0a0a0a;
+  --card-foreground: #18181b;
   --muted: #f4f4f5;
   --muted-foreground: #71717a;
   --border: #e4e4e7;
@@ -35,29 +35,29 @@
   --destructive: #ef4444;
   --ring: #c8a54e;
   --input: #e4e4e7;
-  --sidebar-bg: #111113;
-  --sidebar-fg: #a1a1aa;
-  --sidebar-border: #27272a;
-  --sidebar-accent: #1c1c1f;
+  --sidebar-bg: #fafafa;
+  --sidebar-fg: #71717a;
+  --sidebar-border: #e4e4e7;
+  --sidebar-accent: #f4f4f5;
 }
 
 .dark {
-  --background: #14141a;
-  --foreground: #f4f4f5;
-  --card: #1c1c24;
-  --card-foreground: #f4f4f5;
-  --muted: #24242e;
-  --muted-foreground: #a8a8b3;
-  --border: #2a2a35;
+  --background: #121218;
+  --foreground: #e8e8ed;
+  --card: #1a1a24;
+  --card-foreground: #e8e8ed;
+  --muted: #242430;
+  --muted-foreground: #9a9aa8;
+  --border: #2a2a38;
   --accent: #c8a54e;
   --accent-foreground: #0a0a0a;
   --destructive: #ef4444;
   --ring: #c8a54e;
-  --input: #2a2a35;
-  --sidebar-bg: #111117;
-  --sidebar-fg: #a8a8b3;
-  --sidebar-border: #1e1e28;
-  --sidebar-accent: #181820;
+  --input: #242430;
+  --sidebar-bg: #0e0e16;
+  --sidebar-fg: #9a9aa8;
+  --sidebar-border: #1c1c28;
+  --sidebar-accent: #16161e;
 }
 
 * {
@@ -70,7 +70,6 @@ body {
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
 }
 
-/* Scrollbar styling */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -85,8 +84,6 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--muted-foreground);
 }
-
-/* Override for dark mode scrollbar */
 .dark ::-webkit-scrollbar-thumb {
-  background: #3f3f46;
+  background: #2a2a35;
 }

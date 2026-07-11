@@ -50,19 +50,19 @@ export default function AccountPage() {
       </div>
 
       <div className="space-y-4">
-        <div className="p-4 rounded-lg bg-zinc-900/50 border border-zinc-800">
+        <div className="p-4 rounded-lg bg-card border border-border">
           <label className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Email</label>
           <div className="flex items-center gap-2 mt-1">
             <Mail className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm text-zinc-200">{email}</span>
+            <span className="text-sm text-foreground">{email}</span>
           </div>
         </div>
 
-        <div className="p-4 rounded-lg bg-zinc-900/50 border border-zinc-800">
+        <div className="p-4 rounded-lg bg-card border border-border">
           <label className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Plan</label>
           <div className="flex items-center gap-2 mt-1">
             <Crown className={`h-4 w-4 ${plan?.slug === "free" ? "text-muted-foreground" : "text-[#c8a54e]"}`} />
-            <span className="text-sm text-zinc-200 capitalize">{plan?.name || "Free"}</span>
+            <span className="text-sm text-foreground capitalize">{plan?.name || "Free"}</span>
             {plan?.slug === "free" && (
               <button onClick={() => router.push("/pricing")} className="ml-auto text-xs text-[#c8a54e] hover:text-[#d4b85e] font-medium">
                 Upgrade
@@ -71,7 +71,7 @@ export default function AccountPage() {
           </div>
         </div>
 
-        <div className="p-4 rounded-lg bg-zinc-900/50 border border-zinc-800">
+        <div className="p-4 rounded-lg bg-card border border-border">
           <label className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Quick Actions</label>
           <div className="mt-2 space-y-1">
             <button onClick={() => router.push("/app/billing")} className="flex items-center gap-2 w-full px-3 py-2 rounded-md hover:bg-zinc-800 text-sm text-zinc-300 transition-colors">

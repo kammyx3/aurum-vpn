@@ -44,11 +44,11 @@ export default function AdminNodesPage() {
 
       <div className="space-y-1">
         {nodes.map((node) => (
-          <div key={node.id} className="flex items-center justify-between px-4 py-3 rounded-lg bg-zinc-900/50 border border-zinc-800">
+          <div key={node.id} className="flex items-center justify-between px-4 py-3 rounded-lg bg-card border border-border">
             <div className="flex items-center gap-3">
               <span className={`h-2 w-2 rounded-full ${node.active ? "bg-emerald-500" : "bg-red-500"}`} />
               <div>
-                <p className="text-sm font-medium text-zinc-200">{node.name}</p>
+                <p className="text-sm font-medium text-foreground">{node.name}</p>
                 <p className="text-[11px] text-muted-foreground">{node.city}, {node.country}</p>
               </div>
             </div>

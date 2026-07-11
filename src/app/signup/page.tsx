@@ -72,7 +72,7 @@ export default function SignupPage() {
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-sm">
-        <Link href="/login" className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-zinc-300 mb-6">
+        <Link href="/login" className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground mb-6">
           <ArrowLeft className="h-3.5 w-3.5" />
           Back to login
         </Link>
@@ -81,55 +81,55 @@ export default function SignupPage() {
           <div className="inline-flex items-center justify-center h-12 w-12 rounded-xl bg-[#c8a54e]/10 mb-4">
             <Shield className="h-6 w-6 text-[#c8a54e]" />
           </div>
-          <h1 className="text-lg font-semibold text-zinc-100">Create account</h1>
+          <h1 className="text-lg font-semibold text-foreground">Create account</h1>
           <p className="text-sm text-muted-foreground mt-1">Get started with AURUM VPN</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-1.5">
-            <label className="text-xs font-medium text-zinc-300">Email</label>
+            <label className="text-xs font-medium text-foreground">Email</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
               required
-              className="w-full px-3 py-2 rounded-lg bg-zinc-800/50 border border-zinc-700 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-[#c8a54e]/50 transition-colors"
+              className="w-full px-3 py-2 rounded-lg bg-muted border border-border text-sm text-foreground placeholder-zinc-500 focus:outline-none focus:border-[#c8a54e]/50 transition-colors"
             />
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-medium text-zinc-300">Display name (optional)</label>
+            <label className="text-xs font-medium text-foreground">Display name (optional)</label>
             <input
               type="text"
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
               placeholder="Your name"
-              className="w-full px-3 py-2 rounded-lg bg-zinc-800/50 border border-zinc-700 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-[#c8a54e]/50 transition-colors"
+              className="w-full px-3 py-2 rounded-lg bg-muted border border-border text-sm text-foreground placeholder-zinc-500 focus:outline-none focus:border-[#c8a54e]/50 transition-colors"
             />
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-medium text-zinc-300">Password</label>
+            <label className="text-xs font-medium text-foreground">Password</label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Min. 6 characters"
               required
-              className="w-full px-3 py-2 rounded-lg bg-zinc-800/50 border border-zinc-700 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-[#c8a54e]/50 transition-colors"
+              className="w-full px-3 py-2 rounded-lg bg-muted border border-border text-sm text-foreground placeholder-zinc-500 focus:outline-none focus:border-[#c8a54e]/50 transition-colors"
             />
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-medium text-zinc-300">Confirm password</label>
+            <label className="text-xs font-medium text-foreground">Confirm password</label>
             <input
               type="password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               placeholder="Repeat your password"
               required
-              className="w-full px-3 py-2 rounded-lg bg-zinc-800/50 border border-zinc-700 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-[#c8a54e]/50 transition-colors"
+              className="w-full px-3 py-2 rounded-lg bg-muted border border-border text-sm text-foreground placeholder-zinc-500 focus:outline-none focus:border-[#c8a54e]/50 transition-colors"
             />
           </div>
 

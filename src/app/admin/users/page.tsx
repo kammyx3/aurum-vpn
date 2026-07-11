@@ -34,13 +34,13 @@ export default function AdminUsersPage() {
 
       <div className="space-y-1">
         {profiles.map((p) => (
-          <div key={p.id} className="flex items-center justify-between px-4 py-3 rounded-lg bg-zinc-900/50 border border-zinc-800">
+          <div key={p.id} className="flex items-center justify-between px-4 py-3 rounded-lg bg-card border border-border">
             <div className="flex items-center gap-3">
               <div className="h-8 w-8 rounded-full bg-zinc-800 flex items-center justify-center">
                 <span className="text-xs font-medium text-zinc-400">{p.email[0].toUpperCase()}</span>
               </div>
               <div>
-                <p className="text-sm font-medium text-zinc-200">{p.displayName || p.email}</p>
+                <p className="text-sm font-medium text-foreground">{p.displayName || p.email}</p>
                 <p className="text-[11px] text-muted-foreground">{p.email}</p>
               </div>
             </div>

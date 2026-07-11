@@ -61,7 +61,7 @@ export default function PerksPage() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <CheckCircle className="h-4 w-4 text-emerald-500" />
-                    <span className="text-sm font-medium text-zinc-200">{perk.name}</span>
+                    <span className="text-sm font-medium text-foreground">{perk.name}</span>
                   </div>
                   <span className="text-[11px] text-emerald-500">Active</span>
                 </div>
@@ -80,11 +80,11 @@ export default function PerksPage() {
           </p>
         )}
         {perks.filter((p) => !activePerks.includes(p.slug)).map((perk) => (
-          <div key={perk.id} className="p-3 rounded-lg bg-zinc-900/50 border border-zinc-800">
+          <div key={perk.id} className="p-3 rounded-lg bg-card border border-border">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Plus className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm font-medium text-zinc-200">{perk.name}</span>
+                <span className="text-sm font-medium text-foreground">{perk.name}</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-xs text-muted-foreground">${(perk.priceMonthly / 100).toFixed(2)}/mo</span>

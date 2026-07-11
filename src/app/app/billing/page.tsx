@@ -70,12 +70,12 @@ export default function BillingPage() {
         <h1 className="text-lg font-semibold text-zinc-100">Billing</h1>
       </div>
 
-      <div className="p-4 rounded-lg bg-zinc-900/50 border border-zinc-800">
+      <div className="p-4 rounded-lg bg-card border border-border">
         <label className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Current Plan</label>
         <div className="flex items-center justify-between mt-1">
           <div className="flex items-center gap-2">
             <Crown className={`h-4 w-4 ${currentPlan === "free" ? "text-muted-foreground" : "text-[#c8a54e]"}`} />
-            <span className="text-sm text-zinc-200 font-medium capitalize">{currentPlan || "Free"}</span>
+            <span className="text-sm text-foreground font-medium capitalize">{currentPlan || "Free"}</span>
           </div>
           <span className="text-[11px] text-muted-foreground">
             {currentPlan === "free" ? "No active subscription" : "Active"}
@@ -92,7 +92,7 @@ export default function BillingPage() {
             .map(([k]) => k.replace(/([A-Z])/g, " $1").trim());
 
           return (
-            <div key={plan.id} className={`p-4 rounded-lg border ${isCurrent ? "border-[#c8a54e]/40 bg-[#c8a54e]/5" : "border-zinc-800 bg-zinc-900/50"}`}>
+            <div key={plan.id} className={`p-4 rounded-lg border ${isCurrent ? "border-[#c8a54e]/40 bg-[#c8a54e]/5" : "border-border bg-card"}`}>
               <div className="flex items-center justify-between mb-3">
                 <div>
                   <div className="flex items-center gap-2">

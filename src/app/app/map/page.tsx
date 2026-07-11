@@ -121,19 +121,19 @@ export default function MapPage() {
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
           <Shield className="h-5 w-5 text-[#c8a54e]" />
-          <h1 className="text-lg font-semibold text-zinc-100">VPN Network</h1>
+          <h1 className="text-lg font-semibold text-foreground">VPN Network</h1>
         </div>
-        <div className="flex items-center gap-2 bg-zinc-800/50 rounded-lg p-0.5">
+        <div className="flex items-center gap-2 bg-muted rounded-lg p-0.5">
           <button
             onClick={() => setView("map")}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${view === "map" ? "bg-zinc-700 text-zinc-100" : "text-muted-foreground hover:text-zinc-300"}`}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${view === "map" ? "bg-muted text-foreground" : "text-muted-foreground hover:text-zinc-300"}`}
           >
             <MapIcon className="h-3.5 w-3.5" />
             Map
           </button>
           <button
             onClick={() => setView("list")}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${view === "list" ? "bg-zinc-700 text-zinc-100" : "text-muted-foreground hover:text-zinc-300"}`}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${view === "list" ? "bg-muted text-foreground" : "text-muted-foreground hover:text-zinc-300"}`}
           >
             <List className="h-3.5 w-3.5" />
             List
@@ -142,7 +142,7 @@ export default function MapPage() {
       </div>
 
       {view === "map" ? (
-        <div className="flex-1 min-h-0 rounded-lg overflow-hidden border border-zinc-800">
+        <div className="flex-1 min-h-0 rounded-lg overflow-hidden border border-border">
           <WorldMap
             nodes={filteredNodes}
             userPlan={userPlan}
@@ -158,18 +158,18 @@ export default function MapPage() {
               <button
                 key={node.id}
                 onClick={() => setSelectedNode(node)}
-                className="w-full flex items-center justify-between px-4 py-3 rounded-lg hover:bg-zinc-800/50 transition-colors text-left"
+                className="w-full flex items-center justify-between px-4 py-3 rounded-lg hover:bg-muted transition-colors text-left"
               >
                 <div className="flex items-center gap-3">
                   <div className={`h-2 w-2 rounded-full ${locked ? "bg-zinc-600" : node.status === "online" ? "bg-emerald-500" : node.status === "high_load" ? "bg-yellow-500" : "bg-zinc-600"}`} />
                   <div>
-                    <p className="text-sm font-medium text-zinc-200">{node.city}</p>
+                    <p className="text-sm font-medium text-foreground">{node.city}</p>
                     <p className="text-[11px] text-muted-foreground">{node.country} &middot; {node.name}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-[11px] text-muted-foreground">{node.loadPercent}%</span>
-                  {locked && <span className="text-[10px] px-1.5 py-0.5 rounded bg-zinc-800 text-muted-foreground">Locked</span>}
+                  {locked && <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground">Locked</span>}
                 </div>
               </button>
             );

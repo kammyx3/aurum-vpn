@@ -57,7 +57,7 @@ export default function ReleasesPage() {
           {releases.map((r) => (
             <div
               key={r.version}
-              className="border border-zinc-800 rounded-lg p-4 bg-card"
+              className="border border-border rounded-lg p-4 bg-card"
             >
               <div className="flex items-center justify-between mb-2">
                 <h2 className="text-sm font-semibold">v{r.version}</h2>
@@ -77,7 +77,7 @@ export default function ReleasesPage() {
                   <a
                     key={i}
                     href={f.url}
-                    className="flex items-center justify-between gap-3 px-3 py-2 rounded-md bg-zinc-800/50 hover:bg-zinc-800 transition-colors group"
+                    className="flex items-center justify-between gap-3 px-3 py-2 rounded-md bg-muted hover:bg-zinc-800 transition-colors group"
                   >
                     <div className="flex items-center gap-2 min-w-0">
                       <Download className="h-3.5 w-3.5 text-[#c8a54e] shrink-0" />
@@ -94,7 +94,7 @@ export default function ReleasesPage() {
                 {r.portableUrl && (
                   <a
                     href={r.portableUrl}
-                    className="flex items-center justify-between gap-3 px-3 py-2 rounded-md bg-zinc-800/50 hover:bg-zinc-800 transition-colors group"
+                    className="flex items-center justify-between gap-3 px-3 py-2 rounded-md bg-muted hover:bg-zinc-800 transition-colors group"
                   >
                     <div className="flex items-center gap-2 min-w-0">
                       <Download className="h-3.5 w-3.5 text-zinc-500 shrink-0" />

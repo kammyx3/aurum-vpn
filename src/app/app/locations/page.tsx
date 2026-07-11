@@ -52,11 +52,11 @@ export default function LocationsPage() {
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2">
           <Globe className="h-5 w-5 text-[#c8a54e]" />
-          <h1 className="text-lg font-semibold text-zinc-100">Locations</h1>
+          <h1 className="text-lg font-semibold text-foreground">Locations</h1>
         </div>
         <div className="flex items-center gap-1 bg-zinc-800/50 rounded-lg p-0.5">
-          <button onClick={() => setGroupBy("country")} className={`px-3 py-1.5 rounded-md text-xs font-medium ${groupBy === "country" ? "bg-zinc-700 text-zinc-100" : "text-muted-foreground"}`}>Country</button>
-          <button onClick={() => setGroupBy("region")} className={`px-3 py-1.5 rounded-md text-xs font-medium ${groupBy === "region" ? "bg-zinc-700 text-zinc-100" : "text-muted-foreground"}`}>Region</button>
+          <button onClick={() => setGroupBy("country")} className={`px-3 py-1.5 rounded-md text-xs font-medium ${groupBy === "country" ? "bg-zinc-700 text-foreground" : "text-muted-foreground"}`}>Country</button>
+          <button onClick={() => setGroupBy("region")} className={`px-3 py-1.5 rounded-md text-xs font-medium ${groupBy === "region" ? "bg-zinc-700 text-foreground" : "text-muted-foreground"}`}>Region</button>
         </div>
       </div>
 
@@ -65,11 +65,11 @@ export default function LocationsPage() {
           <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">{group}</h2>
           <div className="space-y-1">
             {groupNodes.map((node) => (
-              <div key={node.id} className="flex items-center justify-between px-4 py-2.5 rounded-lg bg-zinc-900/50 border border-zinc-800">
+              <div key={node.id} className="flex items-center justify-between px-4 py-2.5 rounded-lg bg-card border border-border">
                 <div className="flex items-center gap-3">
                   <span className={`h-2 w-2 rounded-full ${statusColors[node.status] || "bg-zinc-600"}`} />
                   <div>
-                    <p className="text-sm font-medium text-zinc-200">{node.city}</p>
+                    <p className="text-sm font-medium text-foreground">{node.city}</p>
                     <p className="text-[11px] text-muted-foreground">{node.name}</p>
                   </div>
                 </div>

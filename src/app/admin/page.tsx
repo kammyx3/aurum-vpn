@@ -51,11 +51,11 @@ export default function AdminPage() {
         {sections.map((s) => {
           const Icon = s.icon;
           return (
-            <Link key={s.href} href={s.href} className="p-4 rounded-lg bg-zinc-900/50 border border-zinc-800 hover:border-zinc-700 transition-colors">
+            <Link key={s.href} href={s.href} className="p-4 rounded-lg bg-card border border-border hover:border-zinc-700 transition-colors">
               <div className="flex items-center gap-3">
                 <Icon className="h-5 w-5 text-[#c8a54e]" />
                 <div>
-                  <p className="text-sm font-medium text-zinc-200">{s.label}</p>
+                  <p className="text-sm font-medium text-foreground">{s.label}</p>
                   <p className="text-[11px] text-muted-foreground">{s.desc}</p>
                 </div>
               </div>
