@@ -16,10 +16,20 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const supabase = createClient();
+    const STORAGE_KEY = "svpn-auth";
+
+    function getLocalSession() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return null;
+        const p = JSON.parse(raw);
+        return p?.access_token ? p : null;
+      } catch { return null; }
+    }
 
     async function check() {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
+      if (!session && !getLocalSession()) {
         router.replace("/login");
         return;
       }
