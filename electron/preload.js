@@ -47,4 +47,14 @@ contextBridge.exposeInMainWorld("electronAPI", {
   // VPN events from tray
   onVpnConnect: (callback) => ipcRenderer.on("vpn-connect", () => callback()),
   onVpnDisconnect: (callback) => ipcRenderer.on("vpn-disconnect", () => callback()),
+
+  // Splash screen
+  splash: {
+    onStatus: (callback) => ipcRenderer.on("splash-status", (_e, msg) => callback(msg)),
+    onProgress: (callback) => ipcRenderer.on("splash-progress", (_e, pct) => callback(pct)),
+    onError: (callback) => ipcRenderer.on("splash-error", (_e, title, desc) => callback(title, desc)),
+    onDone: (callback) => ipcRenderer.on("splash-done", () => callback()),
+    retry: () => ipcRenderer.send("splash-retry"),
+    continue: () => ipcRenderer.send("splash-continue"),
+  },
 });

@@ -64,7 +64,7 @@ html, body {
 </div>
 <div class="footer">AURUM VPN v1.1.4</div>
 <script>
-  const { ipcRenderer } = require('electron');
+  const api = window.electronAPI?.splash;
   const status = document.getElementById('status');
   const spinner = document.getElementById('spinner');
   const progressBar = document.getElementById('progressBar');
@@ -76,27 +76,29 @@ html, body {
   const retryBtn = document.getElementById('retryBtn');
   const continueBtn = document.getElementById('continueBtn');
 
-  ipcRenderer.on('splash-status', (_, msg) => { status.textContent = msg; });
-  ipcRenderer.on('splash-progress', (_, pct) => {
-    progressBar.classList.add('active');
-    progressFill.style.width = pct + '%';
-    progressText.classList.add('active');
-    progressText.textContent = pct + '%';
-  });
-  ipcRenderer.on('splash-error', (_, title, desc) => {
-    spinner.classList.remove('active');
-    error.classList.add('active');
-    errorTitle.textContent = title;
-    errorDesc.textContent = desc;
-    retryBtn.classList.add('active');
-    continueBtn.classList.add('active');
-  });
-  ipcRenderer.on('splash-done', () => {
-    spinner.classList.remove('active');
-    status.textContent = 'Launching...';
-  });
-  retryBtn.addEventListener('click', () => { ipcRenderer.send('splash-retry'); });
-  continueBtn.addEventListener('click', () => { ipcRenderer.send('splash-continue'); });
+  if (api) {
+    api.onStatus((msg) => { status.textContent = msg; });
+    api.onProgress((pct) => {
+      progressBar.classList.add('active');
+      progressFill.style.width = pct + '%';
+      progressText.classList.add('active');
+      progressText.textContent = pct + '%';
+    });
+    api.onError((title, desc) => {
+      spinner.classList.remove('active');
+      error.classList.add('active');
+      errorTitle.textContent = title;
+      errorDesc.textContent = desc;
+      retryBtn.classList.add('active');
+      continueBtn.classList.add('active');
+    });
+    api.onDone(() => {
+      spinner.classList.remove('active');
+      status.textContent = 'Launching...';
+    });
+    retryBtn.addEventListener('click', () => api.retry());
+    continueBtn.addEventListener('click', () => api.continue());
+  }
 </script>
 </body>
 </html>
