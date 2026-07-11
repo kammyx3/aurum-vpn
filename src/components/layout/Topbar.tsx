@@ -4,19 +4,18 @@ import { usePathname, useRouter } from "next/navigation";
 import { Menu, Sun, Moon, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppStore } from "@/stores/appStore";
+import { createClient } from "@/lib/supabase/client";
 
 const pageTitles: Record<string, string> = {
-  "/app": "Overview",
-  "/app/overview": "Overview",
+  "/app": "VPN Network",
+  "/app/map": "VPN Network",
+  "/app/locations": "Locations",
   "/app/devices": "Devices",
-  "/app/configs": "VPN Configs",
-  "/app/server": "Server Status",
-  "/app/activity": "Activity",
-  "/app/regions": "Regions",
-  "/app/security": "Security",
-  "/app/premium": "Premium",
+  "/app/account": "Account",
+  "/app/billing": "Billing",
+  "/app/perks": "Perks",
   "/app/settings": "Settings",
-  "/app/admin": "Admin Panel",
+  "/admin": "Admin Panel",
 };
 
 interface TopbarProps {
@@ -26,14 +25,21 @@ interface TopbarProps {
 export default function Topbar({ onMenuClick }: TopbarProps) {
   const pathname = usePathname();
   const router = useRouter();
-  const { plan, theme, setTheme, user, logout } = useAppStore();
+  const { plan, theme, setTheme, user, setUser } = useAppStore();
 
-  const pageTitle = pageTitles[pathname] || "Overview";
+  const pageTitle = pageTitles[pathname] || "AURUM VPN";
 
   const toggleTheme = () => {
     if (theme === "light") setTheme("dark");
     else if (theme === "dark") setTheme("system");
     else setTheme("light");
+  };
+
+  const handleLogout = async () => {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    setUser(null);
+    router.push("/");
   };
 
   return (
@@ -51,11 +57,6 @@ export default function Topbar({ onMenuClick }: TopbarProps) {
       </div>
 
       <div className="flex items-center gap-3">
-        <div className="flex items-center gap-1.5 text-xs text-zinc-500">
-          <span className="size-2 rounded-full bg-emerald-500 inline-block" />
-          <span>Connected</span>
-        </div>
-
         <span
           className={cn(
             "text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded",
@@ -68,20 +69,13 @@ export default function Topbar({ onMenuClick }: TopbarProps) {
         </span>
 
         {user ? (
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-zinc-400">{user.username}</span>
-            <button
-              onClick={async () => {
-                await fetch("/api/auth/logout", { method: "POST" });
-                logout();
-                router.push("/");
-              }}
-              className="p-1.5 rounded-md text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800"
-              title="Logout"
-            >
-              <LogOut className="size-4" />
-            </button>
-          </div>
+          <button
+            onClick={handleLogout}
+            className="p-1.5 rounded-md text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+            title="Sign Out"
+          >
+            <LogOut className="size-4" />
+          </button>
         ) : (
           <button
             onClick={() => router.push("/login")}
@@ -95,11 +89,7 @@ export default function Topbar({ onMenuClick }: TopbarProps) {
           onClick={toggleTheme}
           className="p-1.5 rounded-md text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800"
         >
-          {theme === "dark" ? (
-            <Moon className="size-4" />
-          ) : (
-            <Sun className="size-4" />
-          )}
+          {theme === "dark" ? <Moon className="size-4" /> : <Sun className="size-4" />}
         </button>
       </div>
     </header>

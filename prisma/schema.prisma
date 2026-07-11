@@ -7,94 +7,169 @@ datasource db {
   provider = "postgresql"
 }
 
-model User {
+model UserProfile {
+  id             String   @id @default(cuid())
+  supabaseUserId String   @unique
+  email          String   @unique
+  displayName    String   @default("")
+  role           String   @default("user")
+  currentPlanId  String?
+  currentPlan    Plan?    @relation(fields: [currentPlanId], references: [id])
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  devices    UserDevice[]
+  perks      UserPerk[]
+  sessions   VpnSession[]
+  configs    VpnConfig[]
+  billing    BillingEvent[]
+}
+
+model Plan {
+  id              String   @id @default(cuid())
+  name            String
+  slug            String   @unique
+  priceMonthly    Int      @default(0)
+  priceYearly     Int      @default(0)
+  maxDevices      Int      @default(1)
+  allowedRegions  String   @default("[]")
+  allowedNodeTiers String  @default("[]")
+  bandwidthLimitGb Int     @default(0)
+  priorityLevel   Int      @default(0)
+  features        String   @default("{}")
+  active          Boolean  @default(true)
+  sortOrder       Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  users UserProfile[]
+}
+
+model Perk {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String   @default("")
+  priceMonthly Int     @default(0)
+  type        String   @default("addon")
+  metadata    String   @default("{}")
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  userPerks UserPerk[]
+}
+
+model UserPerk {
   id        String   @id @default(cuid())
-  username  String   @unique
-  password  String
-  plan      String   @default("free")
+  userId    String
+  user      UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+  perkId    String
+  perk      Perk    @relation(fields: [perkId], references: [id])
+  active    Boolean @default(true)
+  startedAt DateTime @default(now())
+  expiresAt DateTime?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
-model VpnServer {
-  id            String   @id @default(cuid())
-  name          String   @default("AURUM VPN Server")
-  mode          String   @default("demo")
-  interfaceName String   @default("wg0")
-  endpointHost  String   @default("vpn.example.com")
-  listenPort    Int      @default(51820)
-  subnet        String   @default("10.8.0.0/24")
-  dns           String   @default("1.1.1.1")
-  mtu           Int      @default(1420)
-  publicKey     String   @default("")
-  status        String   @default("online")
-  region        String   @default("us-east-1")
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  devices       Device[]
+model VpnNode {
+  id               String   @id @default(cuid())
+  name             String
+  city             String
+  country          String
+  countryCode      String
+  region           String   @default("")
+  latitude         Float
+  longitude        Float
+  endpointHost     String
+  endpointPort     Int      @default(51820)
+  publicKey        String   @default("")
+  status           String   @default("online")
+  loadPercent      Int      @default(0)
+  latencyMs        Int      @default(0)
+  tier             String   @default("free")
+  requiredPlanSlug String   @default("")
+  requiredPerkSlugs String  @default("[]")
+  tags             String   @default("[]")
+  protocols        String   @default("[]")
+  maxUsers         Int      @default(100)
+  currentUsers     Int      @default(0)
+  active           Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  sessions VpnSession[]
+  configs  VpnConfig[]
 }
 
-model Device {
-  id              String   @id @default(cuid())
-  name            String
-  platform        String   @default("unknown")
-  publicKey       String
-  privateKey      String   @default("")
-  presharedKey    String   @default("")
-  assignedIp      String
-  enabled         Boolean  @default(true)
-  notes           String   @default("")
-  planRequired    String   @default("free")
-  vpnServerId     String
-  vpnServer       VpnServer @relation(fields: [vpnServerId], references: [id], onDelete: Cascade)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  lastHandshake   DateTime?
-  uploadBytes     BigInt   @default(0)
-  downloadBytes   BigInt   @default(0)
-  activityLogs    ActivityLog[]
-}
-
-model ActivityLog {
-  id        String   @id @default(cuid())
-  deviceId  String?
-  device    Device?  @relation(fields: [deviceId], references: [id], onDelete: SetNull)
-  type      String
-  message   String
-  metadata  String   @default("{}")
-  createdAt DateTime @default(now())
-}
-
-model UsageSample {
+model UserDevice {
   id          String   @id @default(cuid())
-  deviceId    String
-  uploadBytes BigInt   @default(0)
-  downloadBytes BigInt @default(0)
-  recordedAt  DateTime @default(now())
+  userId      String
+  user        UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name        String
+  platform    String   @default("unknown")
+  publicKey   String   @default("")
+  assignedIp  String   @default("")
+  enabled     Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  lastUsedAt  DateTime?
+
+  sessions VpnSession[]
+  configs  VpnConfig[]
 }
 
-model AppSettings {
-  id    String @id @default("singleton")
-  theme String @default("system")
-  plan  String @default("free")
-  data  String @default("{}")
+model VpnSession {
+  id              String    @id @default(cuid())
+  userId          String
+  user            UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+  deviceId        String?
+  device          UserDevice? @relation(fields: [deviceId], references: [id], onDelete: SetNull)
+  nodeId          String
+  node            VpnNode     @relation(fields: [nodeId], references: [id])
+  status          String      @default("disconnected")
+  connectedAt     DateTime?
+  disconnectedAt  DateTime?
+  bytesUploaded   BigInt      @default(0)
+  bytesDownloaded BigInt      @default(0)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
 }
 
-model AuditLog {
-  id        String   @id @default(cuid())
-  action    String
-  detail    String   @default("")
-  createdAt DateTime @default(now())
+model VpnConfig {
+  id        String    @id @default(cuid())
+  userId    String
+  user      UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+  deviceId  String
+  device    UserDevice  @relation(fields: [deviceId], references: [id])
+  nodeId    String
+  node      VpnNode     @relation(fields: [nodeId], references: [id])
+  configRef String      @default("")
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  revokedAt DateTime?
+}
+
+model BillingEvent {
+  id              String   @id @default(cuid())
+  userId          String
+  user            UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type            String
+  provider        String   @default("manual")
+  providerEventId String   @default("")
+  metadata        String   @default("{}")
+  createdAt       DateTime @default(now())
 }
 
 model UpdateRelease {
-  id         String   @id @default(cuid())
-  version    String
-  notes      String   @default("")
+  id          String   @id @default(cuid())
+  version     String
+  notes       String   @default("")
   releaseDate DateTime @default(now())
-  fileUrl    String
-  fileSha512 String
-  fileSize   BigInt   @default(0)
+  fileUrl     String
+  fileSha512  String
+  fileSize    BigInt   @default(0)
   portableUrl String?
-  createdAt  DateTime @default(now())
+  createdAt   DateTime @default(now())
 }

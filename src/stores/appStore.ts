@@ -21,7 +21,7 @@ export const useAppStore = create<AppState>((set) => ({
   theme: "system",
   plan: "free",
   sidebarOpen: true,
-  vpnMode: "demo",
+  vpnMode: "production",
   user: null,
   setTheme: (theme) => set({ theme }),
   setPlan: (plan) => set({ plan }),

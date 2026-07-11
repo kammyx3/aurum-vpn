@@ -4,13 +4,12 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Shield,
-  LayoutDashboard,
-  Monitor,
-  FileText,
-  Server,
-  Activity,
+  Map,
   Globe,
-  Crown,
+  Monitor,
+  User,
+  CreditCard,
+  Gift,
   Settings,
   Lock,
 } from "lucide-react";
@@ -18,16 +17,14 @@ import { cn } from "@/lib/utils";
 import { useAppStore } from "@/stores/appStore";
 
 const navItems = [
-  { label: "Overview", href: "/app/overview", icon: LayoutDashboard },
+  { label: "VPN Network", href: "/app/map", icon: Map },
+  { label: "Locations", href: "/app/locations", icon: Globe },
   { label: "Devices", href: "/app/devices", icon: Monitor },
-  { label: "VPN Configs", href: "/app/configs", icon: FileText },
-  { label: "Server Status", href: "/app/server", icon: Server },
-  { label: "Activity", href: "/app/activity", icon: Activity },
-  { label: "Regions", href: "/app/regions", icon: Globe },
-  { label: "Security", href: "/app/security", icon: Shield },
-  { label: "Premium", href: "/app/premium", icon: Crown },
+  { label: "Account", href: "/app/account", icon: User },
+  { label: "Billing", href: "/app/billing", icon: CreditCard },
+  { label: "Perks", href: "/app/perks", icon: Gift },
   { label: "Settings", href: "/app/settings", icon: Settings },
-  { label: "Admin", href: "/app/admin", icon: Lock },
+  { label: "Admin", href: "/admin", icon: Lock },
 ];
 
 interface SidebarProps {
@@ -37,7 +34,7 @@ interface SidebarProps {
 
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const pathname = usePathname();
-  const { plan, vpnMode, user } = useAppStore();
+  const { plan, vpnMode } = useAppStore();
 
   return (
     <>
@@ -89,11 +86,6 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         </nav>
 
         <div className="px-4 py-4 border-t border-zinc-800 shrink-0">
-          {user && (
-            <div className="mb-2 text-xs text-zinc-500 truncate">
-              {user.username}
-            </div>
-          )}
           <div className="flex items-center gap-2">
             <span
               className={cn(
