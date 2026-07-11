@@ -6,7 +6,7 @@ import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
 import { useAppStore } from "@/stores/appStore";
 import { ToastProvider } from "@/components/ui/toast";
-import { createClient } from "@/lib/supabase/client";
+import { createClient, apiFetch } from "@/lib/supabase/client";
 import { Loader2 } from "lucide-react";
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
@@ -24,7 +24,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         return;
       }
       try {
-        const res = await fetch("/api/me");
+        const res = await apiFetch("/api/me");
         if (res.ok) {
           const data = await res.json();
           if (data.profile) {

@@ -5,7 +5,7 @@ import { getUserEntitlements } from "@/lib/access";
 
 export async function POST(request: Request) {
   try {
-    const supabase = await createClient();
+    const supabase = await createClient(request.headers);
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

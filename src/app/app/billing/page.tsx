@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { CreditCard, Crown, Shield, Loader2, ArrowUpCircle, CheckCircle } from "lucide-react";
+import { apiFetch } from "@/lib/supabase/client";
 
 type Plan = {
   id: string;
@@ -48,9 +49,8 @@ export default function BillingPage() {
 
   const handleUpgrade = async (slug: string) => {
     try {
-      const res = await fetch("/api/billing/checkout", {
+      const res = await apiFetch("/api/billing/checkout", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ planSlug: slug }),
       });
       if (res.ok) {

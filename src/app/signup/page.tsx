@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Shield, Loader2, ArrowLeft } from "lucide-react";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/client";
+import { createClient, apiFetch } from "@/lib/supabase/client";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -57,9 +57,8 @@ export default function SignupPage() {
 
         const freePlan = await fetch("/api/billing/plans").then((r) => r.json());
         if (freePlan.plans?.length > 0) {
-          await fetch("/api/billing/assign-plan", {
+          await apiFetch("/api/billing/assign-plan", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ planSlug: "free" }),
           });
         }

@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
+import { createClient, apiFetch } from "@/lib/supabase/client";
 import WorldMap from "@/components/map/WorldMap";
 import NodeDrawer from "@/components/map/NodeDrawer";
 import { Loader2, List, Map as MapIcon } from "lucide-react";
@@ -77,9 +77,8 @@ export default function MapPage() {
   const handleConnect = async () => {
     if (!selectedNode) return;
     try {
-      const res = await fetch("/api/connect", {
+      const res = await apiFetch("/api/connect", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ nodeId: selectedNode.id }),
       });
       if (res.ok) setConnectedNode(selectedNode.id);
@@ -89,7 +88,7 @@ export default function MapPage() {
   const handleDisconnect = async () => {
     if (!connectedNode) return;
     try {
-      await fetch("/api/disconnect", { method: "POST", headers: { "Content-Type": "application/json" } });
+      await apiFetch("/api/disconnect", { method: "POST" });
       setConnectedNode(null);
     } catch (e) { console.error("Disconnect failed:", e); }
   };

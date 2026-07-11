@@ -1,5 +1,9 @@
 import { createServerClient } from "@supabase/ssr";
+import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { NextResponse, type NextRequest } from "next/server";
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
 const publicPaths = ["/", "/login", "/signup", "/forgot-password", "/releases", "/pricing", "/auth/callback"];
 const apiPrefix = "/api";
@@ -18,25 +22,27 @@ export async function proxy(request: NextRequest) {
   }
 
   if (isApi && !isAuthApi) {
-    const response = NextResponse.next();
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          getAll() {
-            return request.cookies.getAll();
-          },
-          setAll(cookiesToSet) {
-            cookiesToSet.forEach(({ name, value }) => response.cookies.set(name, value));
-          },
-        },
-      }
-    );
+    // Check Authorization header first (Bearer token from client)
+    const authHeader = request.headers.get("Authorization");
+    if (authHeader?.startsWith("Bearer ")) {
+      const token = authHeader.slice(7);
+      const sb = createSupabaseClient(supabaseUrl, supabaseAnonKey, {
+        auth: { autoRefreshToken: false, persistSession: false },
+      });
+      const { error } = await sb.auth.getUser(token);
+      if (!error) return NextResponse.next();
+    }
 
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
+    // Fall back to cookie-based check
+    const response = NextResponse.next();
+    const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
+      cookies: {
+        getAll() { return request.cookies.getAll(); },
+        setAll(cookiesToSet) { cookiesToSet.forEach(({ name, value }) => response.cookies.set(name, value)); },
+      },
+    });
+
+    const { data: { session } } = await supabase.auth.getSession();
 
     if (!session) {
       const url = request.nextUrl.clone();
