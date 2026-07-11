@@ -1,5 +1,4 @@
 interface ElectronAPI {
-  rendererReady?: () => void;
   minimize: () => void;
   maximize: () => void;
   close: () => void;
@@ -18,15 +17,7 @@ interface ElectronAPI {
     status: (iface: string) => Promise<{ success: boolean; status?: { interfaceName: string; listening: boolean; peerCount: number; raw: string }; error?: string }>;
     writeConfig: (iface: string, content: string) => Promise<{ success: boolean; path?: string; error?: string }>;
   };
-  updater: {
-    checkForUpdates: () => void;
-    downloadUpdate?: () => void;
-    installUpdate: () => void;
-    onUpdateAvailable: (cb: (event: unknown, info: { version: string; releaseDate: string }) => void) => void;
-    onDownloadProgress: (cb: (event: unknown, progress: { percent: number; transferred: number; total: number }) => void) => void;
-    onUpdateDownloaded: (cb: (event: unknown, info: { version: string }) => void) => void;
-    onUpdateError: (cb: (event: unknown, error: string) => void) => void;
-  };
+  onUpdateStatus?: (cb: (msg: string) => void) => void;
   platform: () => Promise<string>;
   hostname: () => Promise<string>;
   onVpnConnect: (cb: () => void) => void;

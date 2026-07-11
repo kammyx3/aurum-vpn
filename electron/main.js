@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, Tray, Menu, nativeImage, shell, dialog } = require("electron");
+const { app, BrowserWindow, ipcMain, Tray, Menu, nativeImage } = require("electron");
 const path = require("path");
 const { exec, spawn } = require("child_process");
 const fs = require("fs");
@@ -15,7 +15,6 @@ let mainWindow = null;
 let splashWindow = null;
 let tray = null;
 let isQuitting = false;
-let updateFilePath = null;
 
 // ─── Splash Screen ───
 
@@ -25,7 +24,6 @@ function createSplashWindow() {
     height: 460,
     frame: false,
     resizable: false,
-    transparent: false,
     backgroundColor: "#0a0a0f",
     show: false,
     webPreferences: {
@@ -44,20 +42,8 @@ function createSplashWindow() {
   });
 }
 
-function sendSplashStatus(msg) {
-  splashWindow?.webContents.send("splash-status", msg);
-}
-
-function sendSplashProgress(pct) {
-  splashWindow?.webContents.send("splash-progress", pct);
-}
-
-function sendSplashError(title, desc) {
-  splashWindow?.webContents.send("splash-error", title, desc);
-}
-
-function sendSplashDone() {
-  splashWindow?.webContents.send("splash-done");
+function splashSend(channel, ...args) {
+  splashWindow?.webContents.send(channel, ...args);
 }
 
 function closeSplash() {
@@ -126,7 +112,7 @@ function createTray() {
   tray.on("double-click", () => { if (mainWindow) { mainWindow.show(); mainWindow.focus(); } });
 }
 
-// ─── IPC Handlers ─── Window Controls ───
+// ─── IPC Handlers ───
 
 ipcMain.on("window-minimize", () => mainWindow?.minimize());
 ipcMain.on("window-maximize", () => {
@@ -136,37 +122,17 @@ ipcMain.on("window-maximize", () => {
 ipcMain.on("window-close", () => mainWindow?.close());
 ipcMain.handle("window-is-maximized", () => mainWindow?.isMaximized() ?? false);
 
-// ─── Splash IPC ───
-
-ipcMain.on("splash-retry", () => { runStartupSequence(); });
-ipcMain.on("splash-continue", () => {
-  sendSplashDone();
-  createMainWindow();
-  if (tray) createTray();
-});
-
 // ─── Updater ───
 
 const UA = "AURUM-VPN/1.0";
 
-function isNewerVersion(latest, current) {
-  const l = latest.split(".").map(Number);
-  const c = current.split(".").map(Number);
-  for (let i = 0; i < 3; i++) {
-    if ((l[i] || 0) > (c[i] || 0)) return true;
-    if ((l[i] || 0) < (c[i] || 0)) return false;
-  }
-  return false;
-}
-
 function httpsGet(urlStr) {
   return new Promise((resolve, reject) => {
-    function doRequest(url) {
+    function req(url) {
       const parsed = new URL(url);
-      const opts = { hostname: parsed.hostname, path: parsed.pathname + parsed.search, headers: { "User-Agent": UA } };
-      https.get(opts, (res) => {
+      https.get({ hostname: parsed.hostname, path: parsed.pathname + parsed.search, headers: { "User-Agent": UA } }, (res) => {
         if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
-          doRequest(new URL(res.headers.location, url).href);
+          req(new URL(res.headers.location, url).href);
           return;
         }
         let data = "";
@@ -177,18 +143,17 @@ function httpsGet(urlStr) {
         });
       }).on("error", reject);
     }
-    doRequest(urlStr);
+    req(urlStr);
   });
 }
 
 function downloadFile(urlStr, destPath, onProgress) {
   return new Promise((resolve, reject) => {
-    function doDownload(url) {
+    function dl(url) {
       const parsed = new URL(url);
-      const opts = { hostname: parsed.hostname, path: parsed.pathname + parsed.search, headers: { "User-Agent": UA } };
-      https.get(opts, (res) => {
+      https.get({ hostname: parsed.hostname, path: parsed.pathname + parsed.search, headers: { "User-Agent": UA } }, (res) => {
         if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
-          doDownload(new URL(res.headers.location, url).href);
+          dl(new URL(res.headers.location, url).href);
           return;
         }
         if (res.statusCode >= 400) { reject(new Error(`HTTP ${res.statusCode}`)); return; }
@@ -201,103 +166,85 @@ function downloadFile(urlStr, destPath, onProgress) {
         file.on("error", reject);
       }).on("error", reject);
     }
-    doDownload(urlStr);
+    dl(urlStr);
   });
 }
 
-async function checkForUpdate() {
-  sendSplashStatus("Checking for updates...");
-  const response = await httpsGet(UPDATE_API_URL);
-  const data = JSON.parse(response);
-  if (!data.version) return null;
-  const current = app.getVersion();
-  if (!isNewerVersion(data.version, current)) return null;
-  return data;
+function isNewerVersion(latest, current) {
+  const l = latest.split(".").map(Number);
+  const c = current.split(".").map(Number);
+  for (let i = 0; i < 3; i++) {
+    if ((l[i] || 0) > (c[i] || 0)) return true;
+    if ((l[i] || 0) < (c[i] || 0)) return false;
+  }
+  return false;
 }
+
+const VERSION_FILE = path.join(app.getPath("userData"), "updated-version");
 
 async function runStartupSequence() {
-  try {
-    sendSplashStatus("Checking for updates...");
-    const updateData = await checkForUpdate();
+  // If we just updated, record so we don't re-download it
+  const currentVersion = app.getVersion();
+  const previouslyUpdated = getUpdatedVersion();
 
-    if (updateData) {
-      sendSplashStatus(`Update available: v${updateData.version}`);
-      const fileInfo = updateData.files[0];
+  try {
+    splashSend("splash-status", "Checking for updates...");
+
+    const response = await httpsGet(UPDATE_API_URL);
+    const data = JSON.parse(response);
+
+    if (data && data.version && isNewerVersion(data.version, currentVersion) && data.version !== previouslyUpdated) {
+      splashSend("splash-status", `Downloading update v${data.version}...`);
+
+      const fileInfo = data.files[0];
       const cacheDir = path.join(app.getPath("userData"), "update-cache");
       fs.mkdirSync(cacheDir, { recursive: true });
-      updateFilePath = path.join(cacheDir, fileInfo.url.split("/").pop());
+      const installerPath = path.join(cacheDir, fileInfo.url.split("/").pop());
 
       let lastPct = -1;
-      await downloadFile(fileInfo.url, updateFilePath, (transferred, total) => {
+      await downloadFile(fileInfo.url, installerPath, (transferred, total) => {
         const pct = Math.round((transferred / total) * 100);
-        if (pct !== lastPct) { lastPct = pct; sendSplashProgress(pct); }
+        if (pct !== lastPct) { lastPct = pct; splashSend("splash-progress", pct); }
       });
 
-      sendSplashStatus("Update ready. Launching...");
-      await new Promise((r) => setTimeout(r, 500));
-    } else {
-      sendSplashStatus("You're up to date!");
+      // Mark this version as updated so we don't re-download on the new install
+      saveUpdatedVersion(data.version);
+
+      splashSend("splash-status", "Installing update...");
       await new Promise((r) => setTimeout(r, 800));
+
+      // Spawn installer silently and quit
+      spawn(installerPath, ["--updated"], { detached: true, stdio: "ignore" }).unref();
+      isQuitting = true;
+      app.quit();
+      return;
     }
 
-    sendSplashDone();
+    // No update or same version
+    splashSend("splash-status", "You're up to date!");
+    await new Promise((r) => setTimeout(r, 800));
+    splashSend("splash-done");
     createMainWindow();
     if (tray) createTray();
+
   } catch (err) {
-    console.error("[startup] Error:", err.message);
-    if (err.message.includes("ENOTFOUND") || err.message.includes("EAI_AGAIN") || err.message.includes("getaddrinfo")) {
-      sendSplashError("Can't connect to network", "Check your internet connection and try again.");
-    } else {
-      sendSplashError("Update check failed", err.message);
-    }
+    console.error("[updater]", err.message);
+    const isNetwork = err.message.includes("ENOTFOUND") || err.message.includes("EAI_AGAIN") || err.message.includes("getaddrinfo");
+    splashSend("splash-status", isNetwork ? "No network connection" : "Update check failed");
+    splashSend("splash-progress", 100);
+    await new Promise((r) => setTimeout(r, 1500));
+    splashSend("splash-done");
+    createMainWindow();
+    if (tray) createTray();
   }
 }
 
-// ─── Manual Updater IPC (from renderer) ───
-
-ipcMain.on("updater:check", () => customCheckForUpdates());
-ipcMain.on("updater:download", () => customDownloadUpdate());
-ipcMain.on("updater:install", () => customInstallUpdate());
-
-ipcMain.on("renderer:ready", () => {
-  customCheckForUpdates();
-});
-
-async function customCheckForUpdates() {
-  try {
-    const data = await checkForUpdate();
-    if (data) {
-      mainWindow?.webContents.send("updater:update-available", { version: data.version });
-    }
-  } catch (err) {
-    mainWindow?.webContents.send("updater:error", err.message);
-  }
+function saveUpdatedVersion(version) {
+  try { fs.writeFileSync(VERSION_FILE, version, "utf-8"); } catch {}
 }
 
-async function customDownloadUpdate() {
-  try {
-    const data = await checkForUpdate();
-    if (!data || !data.files || !data.files[0]) throw new Error("No update available");
-    const fileInfo = data.files[0];
-    const cacheDir = path.join(app.getPath("userData"), "update-cache");
-    fs.mkdirSync(cacheDir, { recursive: true });
-    updateFilePath = path.join(cacheDir, fileInfo.url.split("/").pop());
-    mainWindow?.webContents.send("updater:download-progress", { percent: 0, transferred: 0, total: fileInfo.size || 0 });
-    let lastPct = -1;
-    await downloadFile(fileInfo.url, updateFilePath, (transferred, total) => {
-      const pct = Math.round((transferred / total) * 100);
-      if (pct !== lastPct) { lastPct = pct; mainWindow?.webContents.send("updater:download-progress", { percent: pct, transferred, total }); }
-    });
-    mainWindow?.webContents.send("updater:update-downloaded", { version: data.version });
-  } catch (err) {
-    mainWindow?.webContents.send("updater:error", err.message);
-  }
-}
-
-function customInstallUpdate() {
-  if (!updateFilePath) { mainWindow?.webContents.send("updater:error", "No update downloaded"); return; }
-  spawn(updateFilePath, ["--updated"], { detached: true, stdio: "ignore" }).unref();
-  app.quit();
+function getUpdatedVersion() {
+  try { return fs.readFileSync(VERSION_FILE, "utf-8").trim(); } catch { return ""; }
 }
 
 // ─── WireGuard IPC Handlers ───

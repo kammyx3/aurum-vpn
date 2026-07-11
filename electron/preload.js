@@ -25,17 +25,8 @@ contextBridge.exposeInMainWorld("electronAPI", {
     writeConfig: (iface, content) => ipcRenderer.invoke("wg:write-config", iface, content),
   },
 
-  // Auto-updater
-  updater: {
-    checkForUpdates: () => ipcRenderer.send("updater:check"),
-    downloadUpdate: () => ipcRenderer.send("updater:download"),
-    installUpdate: () => ipcRenderer.send("updater:install"),
-    onUpdateAvailable: (callback) => ipcRenderer.on("updater:update-available", callback),
-    onDownloadProgress: (callback) => ipcRenderer.on("updater:download-progress", callback),
-    onUpdateDownloaded: (callback) => ipcRenderer.on("updater:update-downloaded", callback),
-    onUpdateError: (callback) => ipcRenderer.on("updater:error", callback),
-  },
-  rendererReady: () => ipcRenderer.send("renderer:ready"),
+  // Notifications from main process
+  onUpdateStatus: (callback) => ipcRenderer.on("updater:status", (_e, msg) => callback(msg)),
 
   // System
   platform: () => ipcRenderer.invoke("sys:platform"),

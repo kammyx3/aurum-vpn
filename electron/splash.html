@@ -59,10 +59,8 @@ html, body {
     <div class="title" id="errorTitle">Something went wrong</div>
     <div class="desc" id="errorDesc"></div>
   </div>
-  <button class="button" id="retryBtn">Retry</button>
-  <button class="button" id="continueBtn" style="margin-left:8px">Continue Anyway</button>
 </div>
-<div class="footer">AURUM VPN v1.1.8</div>
+<div class="footer">AURUM VPN v1.1.10</div>
 <script>
   const api = window.electronAPI?.splash;
   const status = document.getElementById('status');
@@ -73,9 +71,6 @@ html, body {
   const error = document.getElementById('error');
   const errorTitle = document.getElementById('errorTitle');
   const errorDesc = document.getElementById('errorDesc');
-  const retryBtn = document.getElementById('retryBtn');
-  const continueBtn = document.getElementById('continueBtn');
-
   if (api) {
     api.onStatus((msg) => { status.textContent = msg; });
     api.onProgress((pct) => {
@@ -89,15 +84,11 @@ html, body {
       error.classList.add('active');
       errorTitle.textContent = title;
       errorDesc.textContent = desc;
-      retryBtn.classList.add('active');
-      continueBtn.classList.add('active');
     });
     api.onDone(() => {
       spinner.classList.remove('active');
       status.textContent = 'Launching...';
     });
-    retryBtn.addEventListener('click', () => api.retry());
-    continueBtn.addEventListener('click', () => api.continue());
   }
 </script>
 </body>
