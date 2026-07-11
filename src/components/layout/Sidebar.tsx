@@ -11,7 +11,6 @@ import {
   CreditCard,
   Gift,
   Settings,
-  Lock,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppStore } from "@/stores/appStore";
@@ -24,7 +23,6 @@ const navItems = [
   { label: "Billing", href: "/app/billing", icon: CreditCard },
   { label: "Perks", href: "/app/perks", icon: Gift },
   { label: "Settings", href: "/app/settings", icon: Settings },
-  { label: "Admin", href: "/admin", icon: Lock },
 ];
 
 interface SidebarProps {

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import WorldMap from "@/components/map/WorldMap";
 import NodeDrawer from "@/components/map/NodeDrawer";
-import { Loader2, List, Map as MapIcon, Wifi, Shield } from "lucide-react";
+import { Loader2, List, Map as MapIcon } from "lucide-react";
 
 type VpnNode = {
   id: string;
@@ -37,7 +37,6 @@ export default function MapPage() {
   const [view, setView] = useState<"map" | "list">("map");
   const [userPlan, setUserPlan] = useState("free");
   const [userPerks, setUserPerks] = useState<string[]>([]);
-  const [profileEmail, setProfileEmail] = useState("");
 
   useEffect(() => {
     async function init() {
@@ -45,7 +44,6 @@ export default function MapPage() {
         const supabase = createClient();
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) { router.push("/login"); return; }
-        setProfileEmail(session.user.email || "");
 
         const [nodesRes, meRes] = await Promise.all([
           fetch("/api/nodes"),
@@ -57,12 +55,8 @@ export default function MapPage() {
 
         if (meRes.ok) {
           const meData = await meRes.json();
-          if (meData.profile?.currentPlan?.slug) {
-            setUserPlan(meData.profile.currentPlan.slug);
-          }
-          if (meData.profile?.perks) {
-            setUserPerks(meData.profile.perks.map((p: { perk: { slug: string } }) => p.perk.slug));
-          }
+          if (meData.profile?.currentPlan?.slug) setUserPlan(meData.profile.currentPlan.slug);
+          if (meData.profile?.perks) setUserPerks(meData.profile.perks.map((p: { perk: { slug: string } }) => p.perk.slug));
         }
       } catch (e) {
         console.error("Failed to load:", e);
@@ -88,12 +82,8 @@ export default function MapPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ nodeId: selectedNode.id }),
       });
-      if (res.ok) {
-        setConnectedNode(selectedNode.id);
-      }
-    } catch (e) {
-      console.error("Connect failed:", e);
-    }
+      if (res.ok) setConnectedNode(selectedNode.id);
+    } catch (e) { console.error("Connect failed:", e); }
   };
 
   const handleDisconnect = async () => {
@@ -101,9 +91,7 @@ export default function MapPage() {
     try {
       await fetch("/api/disconnect", { method: "POST", headers: { "Content-Type": "application/json" } });
       setConnectedNode(null);
-    } catch (e) {
-      console.error("Disconnect failed:", e);
-    }
+    } catch (e) { console.error("Disconnect failed:", e); }
   };
 
   if (loading) {
@@ -116,67 +104,72 @@ export default function MapPage() {
 
   const filteredNodes = nodes.filter((n) => n.status !== "maintenance");
 
-  return (
-    <div className="h-full flex flex-col">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-3">
-          <Shield className="h-5 w-5 text-[#c8a54e]" />
-          <h1 className="text-lg font-semibold text-foreground">VPN Network</h1>
-        </div>
-        <div className="flex items-center gap-2 bg-muted rounded-lg p-0.5">
+  if (view === "list") {
+    return (
+      <div className="h-full overflow-y-auto">
+        <div className="flex items-center justify-between mb-4">
+          <h1 className="text-lg font-semibold text-foreground">Locations</h1>
           <button
             onClick={() => setView("map")}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${view === "map" ? "bg-muted text-foreground" : "text-muted-foreground hover:text-zinc-300"}`}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-muted text-xs font-medium text-foreground hover:bg-muted/80"
           >
             <MapIcon className="h-3.5 w-3.5" />
             Map
           </button>
-          <button
-            onClick={() => setView("list")}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${view === "list" ? "bg-muted text-foreground" : "text-muted-foreground hover:text-zinc-300"}`}
-          >
-            <List className="h-3.5 w-3.5" />
-            List
-          </button>
         </div>
-      </div>
-
-      {view === "map" ? (
-        <div className="flex-1 min-h-0 rounded-lg overflow-hidden border border-border">
-          <WorldMap
-            nodes={filteredNodes}
-            userPlan={userPlan}
-            userPerks={userPerks}
-            onNodeSelect={(node) => setSelectedNode(node)}
+        <div className="space-y-1">
+          {filteredNodes.map((node) => (
+            <button
+              key={node.id}
+              onClick={() => setSelectedNode(node)}
+              className="w-full flex items-center justify-between px-4 py-3 rounded-lg hover:bg-muted transition-colors text-left"
+            >
+              <div className="flex items-center gap-3">
+                <div className={`h-2 w-2 rounded-full ${isLocked(node) ? "bg-zinc-600" : node.status === "online" ? "bg-emerald-500" : node.status === "high_load" ? "bg-yellow-500" : "bg-zinc-600"}`} />
+                <div>
+                  <p className="text-sm font-medium text-foreground">{node.city}</p>
+                  <p className="text-[11px] text-muted-foreground">{node.country} &middot; {node.name}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] text-muted-foreground">{node.loadPercent}%</span>
+                {isLocked(node) && <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground">Locked</span>}
+              </div>
+            </button>
+          ))}
+        </div>
+        {selectedNode && (
+          <NodeDrawer
+            node={selectedNode}
+            isLocked={isLocked(selectedNode)}
+            isConnected={connectedNode === selectedNode.id}
+            onClose={() => setSelectedNode(null)}
+            onConnect={handleConnect}
+            onDisconnect={handleDisconnect}
+            onUpgrade={() => router.push("/pricing")}
           />
-        </div>
-      ) : (
-        <div className="flex-1 min-h-0 overflow-y-auto space-y-1">
-          {filteredNodes.map((node) => {
-            const locked = isLocked(node);
-            return (
-              <button
-                key={node.id}
-                onClick={() => setSelectedNode(node)}
-                className="w-full flex items-center justify-between px-4 py-3 rounded-lg hover:bg-muted transition-colors text-left"
-              >
-                <div className="flex items-center gap-3">
-                  <div className={`h-2 w-2 rounded-full ${locked ? "bg-zinc-600" : node.status === "online" ? "bg-emerald-500" : node.status === "high_load" ? "bg-yellow-500" : "bg-zinc-600"}`} />
-                  <div>
-                    <p className="text-sm font-medium text-foreground">{node.city}</p>
-                    <p className="text-[11px] text-muted-foreground">{node.country} &middot; {node.name}</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-[11px] text-muted-foreground">{node.loadPercent}%</span>
-                  {locked && <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground">Locked</span>}
-                </div>
-              </button>
-            );
-          })}
-        </div>
-      )}
+        )}
+      </div>
+    );
+  }
 
+  return (
+    <div className="absolute inset-0 -m-6">
+      <WorldMap
+        nodes={filteredNodes}
+        userPlan={userPlan}
+        userPerks={userPerks}
+        onNodeSelect={(node) => setSelectedNode(node)}
+      />
+      <div className="absolute top-3 left-3 z-10">
+        <button
+          onClick={() => setView("list")}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-background/80 backdrop-blur-sm border border-border text-xs font-medium text-foreground hover:bg-muted/80"
+        >
+          <List className="h-3.5 w-3.5" />
+          List
+        </button>
+      </div>
       {selectedNode && (
         <NodeDrawer
           node={selectedNode}

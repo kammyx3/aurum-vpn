@@ -17,7 +17,7 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  if (pathname.startsWith("/admin") || (isApi && !isAuthApi)) {
+  if (isApi && !isAuthApi) {
     const response = NextResponse.next();
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -43,20 +43,6 @@ export async function proxy(request: NextRequest) {
       url.pathname = "/login";
       url.searchParams.set("redirect", pathname);
       return NextResponse.redirect(url);
-    }
-
-    if (pathname.startsWith("/admin")) {
-      const { data: profile } = await supabase
-        .from("UserProfile")
-        .select("role")
-        .eq("supabaseUserId", session.user.id)
-        .single();
-
-      if (profile?.role !== "admin") {
-        const url = request.nextUrl.clone();
-        url.pathname = "/app/map";
-        return NextResponse.redirect(url);
-      }
     }
   }
 
