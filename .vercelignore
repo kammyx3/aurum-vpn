@@ -1,11 +1,7 @@
-node_modules
-.next
 dist-electron
-dist
-electron
-scripts
+node_modules
 .git
-*.db
-*.db-journal
-prisma/dev.db
-prisma/dev.db-journal
+.next
+*.exe
+*.dmg
+*.AppImage

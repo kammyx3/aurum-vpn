@@ -6,7 +6,7 @@ const https = require("https");
 
 const isDev = !app.isPackaged;
 const PORT = 3000;
-const PRODUCTION_URL = "https://aurum-vpn.vercel.app";
+const PRODUCTION_URL = "https://aurum-vpn-aurum10.vercel.app";
 let mainWindow = null;
 let tray = null;
 let isQuitting = false;
