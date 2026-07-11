@@ -1,27 +1,22 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
 import { useAppStore } from "@/stores/appStore";
 import { ToastProvider } from "@/components/ui/toast";
-import { apiFetch, getStoredToken, clearToken } from "@/lib/supabase/client";
+import { apiFetch, getStoredToken } from "@/lib/supabase/client";
 import { Loader2 } from "lucide-react";
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
-  const router = useRouter();
   const { sidebarOpen, setSidebarOpen, setUser, setPlan } = useAppStore();
-  const [checking, setChecking] = useState(true);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function check() {
+    async function restore() {
       const token = getStoredToken();
-      if (!token) {
-        setChecking(false);
-        router.replace("/login");
-        return;
-      }
+      if (!token) { setLoading(false); return; }
+
       try {
         const res = await apiFetch("/api/me");
         if (res.ok) {
@@ -31,20 +26,16 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             setUser({ id: data.profile.id, username: data.profile.email, plan: slug });
             setPlan(slug === "free" ? "free" : "premium");
           }
-        } else {
-          clearToken();
-          router.replace("/login");
-          return;
         }
       } catch {} finally {
-        setChecking(false);
+        setLoading(false);
       }
     }
 
-    check();
-  }, [router, setUser, setPlan]);
+    restore();
+  }, [setUser, setPlan]);
 
-  if (checking) {
+  if (loading) {
     return (
       <div className="flex items-center justify-center h-full bg-background">
         <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
