@@ -30,7 +30,7 @@ function createWindow() {
     show: false,
   });
 
-  const url = isDev ? `http://localhost:${PORT}` : PRODUCTION_URL;
+  const url = isDev ? `http://localhost:${PORT}/login` : `${PRODUCTION_URL}/login`;
 
   mainWindow.loadURL(url);
 
