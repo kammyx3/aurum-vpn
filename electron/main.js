@@ -147,6 +147,8 @@ ipcMain.on("splash-continue", () => {
 
 // ─── Updater ───
 
+const UA = "AURUM-VPN/1.0";
+
 function isNewerVersion(latest, current) {
   const l = latest.split(".").map(Number);
   const c = current.split(".").map(Number);
@@ -161,7 +163,7 @@ function httpsGet(urlStr) {
   return new Promise((resolve, reject) => {
     function doRequest(url) {
       const parsed = new URL(url);
-      const opts = { hostname: parsed.hostname, path: parsed.pathname + parsed.search, headers: { "User-Agent": "AURUM-VPN" } };
+      const opts = { hostname: parsed.hostname, path: parsed.pathname + parsed.search, headers: { "User-Agent": UA } };
       https.get(opts, (res) => {
         if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
           doRequest(new URL(res.headers.location, url).href);
@@ -183,7 +185,7 @@ function downloadFile(urlStr, destPath, onProgress) {
   return new Promise((resolve, reject) => {
     function doDownload(url) {
       const parsed = new URL(url);
-      const opts = { hostname: parsed.hostname, path: parsed.pathname + parsed.search, headers: { "User-Agent": "AURUM-VPN" } };
+      const opts = { hostname: parsed.hostname, path: parsed.pathname + parsed.search, headers: { "User-Agent": UA } };
       https.get(opts, (res) => {
         if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
           doDownload(new URL(res.headers.location, url).href);
@@ -265,7 +267,7 @@ async function customCheckForUpdates() {
   try {
     const data = await checkForUpdate();
     if (data) {
-      mainWindow?.webContents.send("updater:update-available", { version: data.version, releaseDate: data.releaseDate });
+      mainWindow?.webContents.send("updater:update-available", { version: data.version });
     }
   } catch (err) {
     mainWindow?.webContents.send("updater:error", err.message);
@@ -274,9 +276,8 @@ async function customCheckForUpdates() {
 
 async function customDownloadUpdate() {
   try {
-    const response = await httpsGet(UPDATE_API_URL);
-    const data = JSON.parse(response);
-    if (!data.files || !data.files[0]) throw new Error("No download URL");
+    const data = await checkForUpdate();
+    if (!data || !data.files || !data.files[0]) throw new Error("No update available");
     const fileInfo = data.files[0];
     const cacheDir = path.join(app.getPath("userData"), "update-cache");
     fs.mkdirSync(cacheDir, { recursive: true });

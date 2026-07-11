@@ -47,11 +47,11 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
 
       <aside
         className={cn(
-          "fixed top-0 left-0 z-50 h-full w-60 bg-sidebar border-r border-zinc-800 flex flex-col transition-transform duration-200 lg:translate-x-0",
+          "fixed top-0 left-0 z-50 h-full w-60 bg-sidebar border-r border-sidebar-border flex flex-col transition-transform duration-200 lg:translate-x-0",
           isOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
-        <div className="flex items-center gap-2 px-5 h-14 border-b border-zinc-800 shrink-0">
+        <div className="flex items-center gap-2 px-5 h-14 border-b border-sidebar-border shrink-0">
           <Shield className="size-5 text-[#c8a54e]" />
           <span className="font-semibold text-sm tracking-wider">
             <span className="text-[#c8a54e]">AURUM</span>
@@ -74,8 +74,8 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                 className={cn(
                   "flex items-center gap-3 px-5 py-2.5 text-sm transition-colors",
                   isActive
-                    ? "bg-zinc-800/60 text-white border-l-2 border-[#c8a54e]"
-                    : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/30 border-l-2 border-transparent"
+                    ? "bg-sidebar-accent text-foreground border-l-2 border-[#c8a54e]"
+                    : "text-sidebar-fg hover:text-foreground hover:bg-sidebar-accent border-l-2 border-transparent"
                 )}
               >
                 <Icon className="size-4 shrink-0" />
@@ -85,19 +85,19 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
           })}
         </nav>
 
-        <div className="px-4 py-4 border-t border-zinc-800 shrink-0">
+        <div className="px-4 py-4 border-t border-sidebar-border shrink-0">
           <div className="flex items-center gap-2">
             <span
               className={cn(
                 "text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded",
                 plan === "premium"
                   ? "bg-[#c8a54e]/20 text-[#c8a54e]"
-                  : "bg-zinc-800 text-zinc-400"
+                  : "bg-sidebar-accent text-sidebar-fg"
               )}
             >
               {plan === "premium" ? "Premium" : "Free"}
             </span>
-            <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded bg-zinc-800 text-zinc-400">
+            <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded bg-sidebar-accent text-sidebar-fg">
               {vpnMode}
             </span>
           </div>

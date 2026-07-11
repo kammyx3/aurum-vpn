@@ -1,8 +1,7 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import { Menu, Sun, Moon, LogOut } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Menu, Sun, Moon, LogOut, User } from "lucide-react";
 import { useAppStore } from "@/stores/appStore";
 import { createClient } from "@/lib/supabase/client";
 
@@ -25,7 +24,7 @@ interface TopbarProps {
 export default function Topbar({ onMenuClick }: TopbarProps) {
   const pathname = usePathname();
   const router = useRouter();
-  const { plan, theme, setTheme, user, setUser } = useAppStore();
+  const { plan, theme, setTheme, user, setUser, setPlan } = useAppStore();
 
   const pageTitle = pageTitles[pathname] || "AURUM VPN";
 
@@ -39,58 +38,62 @@ export default function Topbar({ onMenuClick }: TopbarProps) {
     const supabase = createClient();
     await supabase.auth.signOut();
     setUser(null);
+    setPlan("free");
     router.push("/");
+    router.refresh();
   };
 
   return (
-    <header className="z-30 h-14 border-b border-zinc-200 dark:border-zinc-800 bg-white/80 dark:bg-background/80 backdrop-blur-xl flex items-center justify-between px-4 shrink-0">
+    <header className="sticky top-0 z-30 h-14 border-b border-border bg-white/80 dark:bg-background/80 backdrop-blur-xl flex items-center justify-between px-4 shrink-0">
       <div className="flex items-center gap-3">
         <button
           onClick={onMenuClick}
-          className="lg:hidden p-1.5 rounded-md text-muted-foreground hover:text-zinc-800 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+          className="lg:hidden p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted"
         >
           <Menu className="size-5" />
         </button>
-        <h1 className="text-sm font-semibold text-zinc-800 dark:text-zinc-100">
-          {pageTitle}
-        </h1>
+        <h1 className="text-sm font-semibold text-foreground">{pageTitle}</h1>
       </div>
 
-      <div className="flex items-center gap-3">
-        <span
-          className={cn(
-            "text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded",
-            plan === "premium"
-              ? "bg-[#c8a54e]/20 text-[#c8a54e]"
-              : "bg-zinc-100 dark:bg-zinc-800 text-muted-foreground"
-          )}
-        >
-          {plan === "premium" ? "Premium" : "Free"}
-        </span>
+      <div className="flex items-center gap-2">
+        {user && (
+          <>
+            <div className="hidden sm:flex items-center gap-1.5 px-2 py-1 rounded-md bg-muted/50">
+              <User className="h-3.5 w-3.5 text-muted-foreground" />
+              <span className="text-xs text-foreground">{user.username}</span>
+            </div>
+            <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded bg-muted text-muted-foreground">
+              {plan === "premium" ? "Premium" : "Free"}
+            </span>
+          </>
+        )}
 
-        {user ? (
-          <button
-            onClick={handleLogout}
-            className="p-1.5 rounded-md text-muted-foreground hover:text-zinc-800 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800"
-            title="Sign Out"
-          >
-            <LogOut className="size-4" />
-          </button>
-        ) : (
+        {!user && (
           <button
             onClick={() => router.push("/login")}
-            className="text-xs font-medium text-[#c8a54e] hover:text-[#d4b85e]"
+            className="text-xs font-medium text-accent hover:text-[#d4b85e]"
           >
-            Login
+            Sign In
           </button>
         )}
 
         <button
           onClick={toggleTheme}
-          className="p-1.5 rounded-md text-muted-foreground hover:text-zinc-800 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+          className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted"
+          title={theme === "dark" ? "Light mode" : theme === "light" ? "System mode" : "Dark mode"}
         >
           {theme === "dark" ? <Moon className="size-4" /> : <Sun className="size-4" />}
         </button>
+
+        {user && (
+          <button
+            onClick={handleLogout}
+            className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted"
+            title="Sign Out"
+          >
+            <LogOut className="size-4" />
+          </button>
+        )}
       </div>
     </header>
   );
