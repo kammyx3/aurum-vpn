@@ -45,7 +45,7 @@ export default function AdminPage() {
     <div>
       <div className="flex items-center gap-2 mb-6">
         <Shield className="h-5 w-5 text-[#c8a54e]" />
-        <h1 className="text-lg font-semibold text-zinc-100">Admin Panel</h1>
+        <h1 className="text-lg font-semibold text-foreground">Admin Panel</h1>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {sections.map((s) => {

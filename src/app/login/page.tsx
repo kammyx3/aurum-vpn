@@ -39,16 +39,16 @@ function LoginForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-1.5">
-        <label className="text-xs font-medium text-zinc-300">Email</label>
+        <label className="text-xs font-medium text-foreground">Email</label>
         <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" required
-          className="w-full px-3 py-2 rounded-lg bg-zinc-800/50 border border-zinc-700 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-[#c8a54e]/50 transition-colors" />
+          className="w-full px-3 py-2 rounded-lg bg-muted border border-input text-foreground placeholder-muted-foreground text-sm focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-colors" />
       </div>
       <div className="space-y-1.5">
-        <label className="text-xs font-medium text-zinc-300">Password</label>
+        <label className="text-xs font-medium text-foreground">Password</label>
         <div className="relative">
           <input type={showPassword ? "text" : "password"} value={password} onChange={(e) => { setPassword(e.target.value); setError(""); }} placeholder="Enter your password" required
-            className="w-full px-3 py-2 pr-9 rounded-lg bg-zinc-800/50 border border-zinc-700 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-[#c8a54e]/50 transition-colors" />
-          <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-zinc-300">
+            className="w-full px-3 py-2 pr-9 rounded-lg bg-muted border border-input text-foreground placeholder-muted-foreground text-sm focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-colors" />
+          <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
             {showPassword ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
           </button>
         </div>
@@ -74,7 +74,7 @@ export default function LoginPage() {
           <div className="inline-flex items-center justify-center h-12 w-12 rounded-xl bg-[#c8a54e]/10 mb-4">
             <Shield className="h-6 w-6 text-[#c8a54e]" />
           </div>
-          <h1 className="text-lg font-semibold text-zinc-100">Welcome back</h1>
+          <h1 className="text-lg font-semibold text-foreground">Welcome back</h1>
           <p className="text-sm text-muted-foreground mt-1">Sign in to your AURUM VPN account</p>
         </div>
         <Suspense fallback={<div className="flex justify-center py-8"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>}>

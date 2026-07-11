@@ -27,11 +27,11 @@ export default function ReleasesPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-background text-zinc-200">
+    <div className="min-h-screen bg-background text-foreground">
       <div className="max-w-2xl mx-auto px-4 py-12">
         <Link
           href="/"
-          className="inline-flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-300 mb-6 transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground mb-6 transition-colors"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
           Back to Dashboard
