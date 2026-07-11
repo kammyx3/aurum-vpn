@@ -3,65 +3,54 @@ import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-const SESSION_KEY = "aurum_session";
+const TOKEN_KEY = "aurum_token";
 
 let cachedClient: ReturnType<typeof createSupabaseClient> | null = null;
 
-export function saveSession(session: { access_token: string; refresh_token?: string; user?: { id: string; email?: string } } | null) {
+/** Read the raw token data from localStorage */
+export function getStoredToken(): { access_token: string; refresh_token?: string; user_id?: string; email?: string } | null {
   try {
-    if (session) {
-      localStorage.setItem(SESSION_KEY, JSON.stringify(session));
-    } else {
-      localStorage.removeItem(SESSION_KEY);
-    }
-  } catch {}
-}
-
-export function getSavedSession(): { access_token: string; refresh_token?: string } | null {
-  try {
-    const raw = localStorage.getItem(SESSION_KEY);
+    const raw = localStorage.getItem(TOKEN_KEY);
     if (!raw) return null;
-    const parsed = JSON.parse(raw);
-    if (parsed?.access_token) return parsed;
-    return null;
+    return JSON.parse(raw);
   } catch {
     return null;
   }
 }
 
+/** Save token data to localStorage */
+export function storeToken(data: { access_token: string; refresh_token?: string; user?: { id: string; email?: string } }) {
+  try {
+    localStorage.setItem(TOKEN_KEY, JSON.stringify({
+      access_token: data.access_token,
+      refresh_token: data.refresh_token || "",
+      user_id: data.user?.id || "",
+      email: data.user?.email || "",
+    }));
+  } catch {}
+}
+
+/** Clear stored token */
+export function clearToken() {
+  try { localStorage.removeItem(TOKEN_KEY); } catch {}
+}
+
 export function createClient() {
   if (cachedClient) return cachedClient;
   cachedClient = createSupabaseClient(supabaseUrl, supabaseAnonKey, {
-    auth: {
-      flowType: "pkce",
-      autoRefreshToken: true,
-      detectSessionInUrl: false,
-      persistSession: true,
-      storageKey: "sb-auth",
-    },
+    auth: { autoRefreshToken: true, persistSession: false },
   });
-
-  // Whenever auth state changes, sync to our custom key
-  cachedClient.auth.onAuthStateChange((event, session) => {
-    if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED") {
-      saveSession(session);
-    } else if (event === "SIGNED_OUT") {
-      saveSession(null);
-    }
-  });
-
   return cachedClient;
 }
 
+/** Fetch an API route with the stored Bearer token automatically */
 export async function apiFetch(path: string, options: RequestInit = {}) {
-  const supabase = createClient();
-  const { data } = await supabase.auth.getSession();
-  const session = data.session || getSavedSession();
+  const stored = getStoredToken();
   const headers = new Headers(options.headers);
-  if (session?.access_token) {
-    headers.set("Authorization", `Bearer ${session.access_token}`);
+  if (stored?.access_token) {
+    headers.set("Authorization", `Bearer ${stored.access_token}`);
   }
-  if (!headers.has("Content-Type") && options.method && options.method !== "GET") {
+  if (options.method && options.method !== "GET" && !headers.has("Content-Type")) {
     headers.set("Content-Type", "application/json");
   }
   return fetch(path, { ...options, headers });

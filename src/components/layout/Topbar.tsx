@@ -3,7 +3,7 @@
 import { usePathname, useRouter } from "next/navigation";
 import { Menu, Sun, Moon, LogOut, User } from "lucide-react";
 import { useAppStore } from "@/stores/appStore";
-import { createClient } from "@/lib/supabase/client";
+import { createClient, clearToken } from "@/lib/supabase/client";
 
 const pageTitles: Record<string, string> = {
   "/app": "VPN Network",
@@ -35,8 +35,7 @@ export default function Topbar({ onMenuClick }: TopbarProps) {
   };
 
   const handleLogout = async () => {
-    const supabase = createClient();
-    await supabase.auth.signOut();
+    clearToken();
     setUser(null);
     setPlan("free");
     router.push("/");

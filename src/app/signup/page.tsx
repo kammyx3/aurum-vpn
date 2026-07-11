@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Shield, Loader2, ArrowLeft } from "lucide-react";
 import Link from "next/link";
-import { createClient, apiFetch, saveSession } from "@/lib/supabase/client";
+import { createClient, apiFetch, storeToken } from "@/lib/supabase/client";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -44,7 +44,7 @@ export default function SignupPage() {
         return;
       }
 
-      if (authData.session) saveSession(authData.session);
+      if (authData.session) storeToken(authData.session);
 
       if (authData.user) {
         await fetch("/api/auth/sync-profile", {

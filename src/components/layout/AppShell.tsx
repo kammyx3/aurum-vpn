@@ -6,7 +6,7 @@ import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
 import { useAppStore } from "@/stores/appStore";
 import { ToastProvider } from "@/components/ui/toast";
-import { createClient, apiFetch, getSavedSession } from "@/lib/supabase/client";
+import { createClient, apiFetch, getStoredToken, storeToken, clearToken } from "@/lib/supabase/client";
 import { Loader2 } from "lucide-react";
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
@@ -18,8 +18,9 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     const supabase = createClient();
 
     async function check() {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session && !getSavedSession()) {
+      const token = getStoredToken();
+      if (!token) {
+        setChecking(false);
         router.replace("/login");
         return;
       }
@@ -32,6 +33,11 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             setUser({ id: data.profile.id, username: data.profile.email, plan: slug });
             setPlan(slug === "free" ? "free" : "premium");
           }
+        } else {
+          // Token invalid, clear and redirect
+          clearToken();
+          router.replace("/login");
+          return;
         }
       } catch {} finally {
         setChecking(false);
@@ -40,10 +46,12 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
     check();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED") {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session) {
+        storeToken(session);
         check();
-      } else if (event === "SIGNED_OUT") {
+      } else {
+        clearToken();
         setUser(null);
         setPlan("free");
         router.replace("/login");

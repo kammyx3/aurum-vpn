@@ -4,7 +4,7 @@ import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Shield, Eye, EyeOff, Loader2, ArrowRight } from "lucide-react";
 import Link from "next/link";
-import { createClient, saveSession } from "@/lib/supabase/client";
+import { createClient, storeToken } from "@/lib/supabase/client";
 
 function LoginForm() {
   const router = useRouter();
@@ -27,7 +27,7 @@ function LoginForm() {
         setError(authError.message === "Invalid login credentials" ? "Invalid email or password" : authError.message);
         return;
       }
-      if (data.session) saveSession(data.session);
+      if (data.session) storeToken(data.session);
       router.push(redirect);
       router.refresh();
     } catch {
