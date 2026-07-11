@@ -16,7 +16,7 @@ function run(cmd, opts = {}) {
   execSync(cmd, { cwd: path.join(__dirname, ".."), stdio: "inherit", ...opts });
 }
 
-// 1. Build Next.js app (needed for Vercel deploy)
+// 1. Build Next.js app
 console.log("\n=== Building Next.js app ===");
 run("npx next build");
 
@@ -37,11 +37,9 @@ function computeSha512(filePath) {
 }
 
 const setupName = `AURUM VPN Setup ${version}.exe`;
-const portableName = `AURUM VPN ${version}.exe`;
 const blockmapName = `AURUM VPN Setup ${version}.exe.blockmap`;
 
 const setupPath = path.join(DIST, setupName);
-const portablePath = path.join(DIST, portableName);
 
 if (!fs.existsSync(setupPath)) {
   console.error(`Setup file not found: ${setupPath}`);
@@ -50,18 +48,12 @@ if (!fs.existsSync(setupPath)) {
 
 const setupSha512 = computeSha512(setupPath);
 const setupSize = fs.statSync(setupPath).size;
-const portableSha512 = fs.existsSync(portablePath) ? computeSha512(portablePath) : null;
-const portableSize = fs.existsSync(portablePath) ? fs.statSync(portablePath).size : 0;
 
 // Copy files with hyphenated names for GitHub
-const ghSetupName = `AURUM-VPN-Setup-${version}.exe`;
-const ghPortableName = `AURUM-VPN-${version}.exe`;
-const ghBlockmapName = `AURUM-VPN-Setup-${version}.exe.blockmap`;
+const ghSetupName = `AURUM-VPN-${version}.exe`;
+const ghBlockmapName = `AURUM-VPN-${version}.exe.blockmap`;
 
 fs.copyFileSync(setupPath, path.join(DIST, ghSetupName));
-if (fs.existsSync(portablePath)) {
-  fs.copyFileSync(portablePath, path.join(DIST, ghPortableName));
-}
 fs.copyFileSync(path.join(DIST, blockmapName), path.join(DIST, ghBlockmapName));
 
 // 5. Create GitHub release and upload files
@@ -72,12 +64,11 @@ run(`gh release create ${tag} --repo ${REPO} --title "${version}" --generate-not
 
 console.log("\n=== Uploading files to GitHub ===");
 run(
-  `gh release upload ${tag} --repo ${REPO} "${path.join(DIST, ghSetupName)}" "${path.join(DIST, ghPortableName)}" "${path.join(DIST, ghBlockmapName)}" "${path.join(DIST, "latest.yml")}" --clobber`,
+  `gh release upload ${tag} --repo ${REPO} "${path.join(DIST, ghSetupName)}" "${path.join(DIST, ghBlockmapName)}" "${path.join(DIST, "latest.yml")}" --clobber`,
   { env: { ...process.env, GH_TOKEN } }
 );
 
 const downloadUrl = `https://github.com/${REPO}/releases/download/${tag}/${ghSetupName}`;
-const portableUrl = `https://github.com/${REPO}/releases/download/${tag}/${ghPortableName}`;
 
 // 6. Register release in database
 console.log("\n=== Registering release in database ===");
@@ -94,7 +85,7 @@ async function main() {
       fileUrl: "${downloadUrl}",
       fileSha512: "${setupSha512}",
       fileSize: BigInt(${setupSize}),
-      portableUrl: "${portableUrl}",
+      portableUrl: null,
       notes: "",
       releaseDate: new Date(),
     },
@@ -111,9 +102,6 @@ fs.unlinkSync(path.join(DIST, "_register.js"));
 // 7. Cleanup copied files
 fs.unlinkSync(path.join(DIST, ghSetupName));
 fs.unlinkSync(path.join(DIST, ghBlockmapName));
-if (fs.existsSync(path.join(DIST, ghPortableName))) {
-  fs.unlinkSync(path.join(DIST, ghPortableName));
-}
 
 console.log(`\n=== Published v${version} ===`);
 console.log(`Download URL: ${downloadUrl}`);

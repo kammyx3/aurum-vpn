@@ -1,6 +1,6 @@
 {
   "name": "aurum-vpn",
-  "version": "1.1.5",
+  "version": "1.1.6",
   "description": "AURUM VPN - Secure VPN Management Panel",
   "main": "electron/main.js",
   "author": "AURUM VPN",
@@ -41,16 +41,19 @@
     ],
     "win": {
       "target": [
-        "nsis",
-        "portable"
+        "nsis"
       ],
       "icon": "public/icons/icon.ico"
     },
     "nsis": {
-      "oneClick": false,
-      "allowToChangeInstallationDirectory": true,
+      "oneClick": true,
+      "perMachine": false,
       "installerIcon": "public/icons/icon.ico",
-      "uninstallerIcon": "public/icons/icon.ico"
+      "uninstallerIcon": "public/icons/icon.ico",
+      "installerHeaderIcon": "public/icons/icon.ico",
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "AURUM VPN"
     },
     "mac": {
       "target": [

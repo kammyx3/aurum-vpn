@@ -159,16 +159,23 @@ function isNewerVersion(latest, current) {
 
 function httpsGet(urlStr) {
   return new Promise((resolve, reject) => {
-    const parsed = new URL(urlStr);
-    const opts = { hostname: parsed.hostname, path: parsed.pathname + parsed.search, headers: { "User-Agent": "AURUM-VPN" } };
-    https.get(opts, (res) => {
-      let data = "";
-      res.on("data", (c) => (data += c));
-      res.on("end", () => {
-        if (res.statusCode >= 400) reject(new Error(`HTTP ${res.statusCode}`));
-        else resolve(data);
-      });
-    }).on("error", reject);
+    function doRequest(url) {
+      const parsed = new URL(url);
+      const opts = { hostname: parsed.hostname, path: parsed.pathname + parsed.search, headers: { "User-Agent": "AURUM-VPN" } };
+      https.get(opts, (res) => {
+        if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+          doRequest(new URL(res.headers.location, url).href);
+          return;
+        }
+        let data = "";
+        res.on("data", (c) => (data += c));
+        res.on("end", () => {
+          if (res.statusCode >= 400) reject(new Error(`HTTP ${res.statusCode}`));
+          else resolve(data);
+        });
+      }).on("error", reject);
+    }
+    doRequest(urlStr);
   });
 }
 
